@@ -1,0 +1,36 @@
+{
+  "name": "cornwall-ponds-dev",
+  "build": { "dockerfile": "Dockerfile", "context": "..", "target": "dev" },
+  "remoteUser": "node",
+  "features": {
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+  "containerEnv": {
+    // Alchemy + Wrangler: Cloudflare API (set on the host or in CI)
+    "CLOUDFLARE_ACCOUNT_ID": "${localEnv:CLOUDFLARE_ACCOUNT_ID}",
+    "CLOUDFLARE_API_TOKEN": "${localEnv:CLOUDFLARE_API_TOKEN}",
+    // Required to encrypt/decrypt alchemy.secret.env in .alchemy state; same value everywhere you deploy
+    "ALCHEMY_PASSWORD": "${localEnv:ALCHEMY_PASSWORD}"
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "bradlc.vscode-tailwindcss",
+        "cloudflare.wrangler-vscode",
+        "tamasfe.even-better-toml",
+        "irongeek.vscode-env"
+      ]
+    }
+  },
+  "mounts": [
+    "source=${localWorkspaceFolderBasename}-node_modules,target=${containerWorkspaceFolder}/node_modules,type=volume",
+    "source=pnpm-store,target=/home/node/.local/share/pnpm/store,type=volume",
+    // CRITICAL FOR ALCHEMY: Alchemy stores infrastructure state locally.
+    // This mount ensures your "state" isn't lost on container rebuild.
+    "source=alchemy-state,target=${containerWorkspaceFolder}/.alchemy,type=volume"
+  ],
+  "postCreateCommand": "pnpm install",
+  "postStartCommand": "sudo mkdir -p /home/node/.local/share/pnpm/store /home/node/.local/share/better-t-stack ${containerWorkspaceFolder}/node_modules && sudo chown -R node:node /home/node/.local ${containerWorkspaceFolder}/node_modules"
+}

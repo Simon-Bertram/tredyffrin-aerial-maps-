@@ -1,0 +1,3 @@
+{
+  "extends": "@tehs-aerial-images/config/tsconfig.base.json"
+}

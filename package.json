@@ -1,0 +1,33 @@
+{
+  "name": "tehs-aerial-images",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "type": "module",
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "check-types": "turbo check-types",
+    "dev:web": "turbo -F web dev",
+    "dev:server": "turbo -F server dev",
+    "db:push": "turbo -F @tehs-aerial-images/db db:push",
+    "db:generate": "turbo -F @tehs-aerial-images/db db:generate",
+    "deploy": "turbo -F @tehs-aerial-images/infra deploy",
+    "destroy": "turbo -F @tehs-aerial-images/infra destroy"
+  },
+  "dependencies": {
+    "@tehs-aerial-images/env": "workspace:*",
+    "dotenv": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "catalog:",
+    "@tehs-aerial-images/config": "workspace:*",
+    "@types/node": "catalog:",
+    "turbo": "^2.8.12",
+    "typescript": "catalog:"
+  },
+  "packageManager": "pnpm@10.32.1"
+}
