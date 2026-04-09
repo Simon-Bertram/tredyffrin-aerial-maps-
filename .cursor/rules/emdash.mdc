@@ -1,0 +1,12 @@
+---
+description: Rules for EmDash CMS integration and R2 storage.
+globs: ["apps/web/src/content/**/*"]
+alwaysApply: false
+---
+
+# EmDash Standards
+
+- EmDash uses Kysely internally but we use Drizzle for the Hono API.
+- After changing `src/content/config.ts`, always run `pnpm dlx emdash types` to sync the environment.
+- IMAGES: Use `z.image()` for aerial photos to trigger the R2 upload pipeline.
+- ADMIN: The `/admin` route is reserved for the EmDash dashboard; do not create conflicting Astro routes.

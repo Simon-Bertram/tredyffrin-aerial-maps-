@@ -1,0 +1,17 @@
+---
+description: pnpm workspace and Turborepo management rules.
+globs: ["*"]
+alwaysApply: true
+---
+
+# Monorepo Standards
+
+- This is a Better-T-Stack monorepo managed by pnpm.
+- `apps/web`: Astro frontend (Client/Server islands).
+- `apps/api`: Hono backend (Cloudflare Workers).
+- `packages/db`: Shared Drizzle schema.
+
+## Dependency Management
+
+- Always use `pnpm add` inside specific app directories.
+- If modifying shared types, run `pnpm build` in the root to update the cache.

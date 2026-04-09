@@ -1,0 +1,12 @@
+---
+description: Enforcement of V8 Isolate (Cloudflare Workers) compatibility.
+globs: ["apps/api/**/*", "apps/web/src/pages/api/**/*"]
+alwaysApply: true
+---
+
+# Edge Runtime Rules
+
+- ENVIRONMENT: Cloudflare Workers (V8 Isolate).
+- NO NODE.JS BUILT-INS: Never use `fs`, `path`, `os`, or `crypto` (use Web Crypto API).
+- DB ACCESS: Always use `c.env.DB` for D1 access; never instantiate a new DB connection outside of the Hono context.
+- GEOJSON: Standardize all mapping data to [longitude, latitude] format.
