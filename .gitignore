@@ -49,3 +49,6 @@ coverage
 .cache
 tmp
 temp
+
+# Local pnpm content-addressable store
+.pnpm-store/
