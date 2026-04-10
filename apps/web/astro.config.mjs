@@ -1,4 +1,5 @@
 // @ts-check
+import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import react from "@astrojs/react";
@@ -32,24 +33,55 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 /** Same file Alchemy's platformProxy validates; @astrojs/cloudflare must read it too or dev SSR omits nodejs_compat. */
 const alchemyWranglerPath = path.join(__dirname, ".alchemy/local/wrangler.jsonc");
 
-// #region agent log
-fetch("http://localhost:7863/ingest/3b9fb545-c701-4112-be3a-7ef1749fe1a4", {
-	method: "POST",
-	headers: {
-		"Content-Type": "application/json",
-		"X-Debug-Session-Id": "ba1ffa",
-	},
-	body: JSON.stringify({
-		sessionId: "ba1ffa",
-		runId: "post-fix-v3",
-		hypothesisId: "H2",
-		location: "astro.config.mjs:alchemyWranglerPath",
-		message: "adapter configPath matches Alchemy wrangler for Vite workerd compat flags",
-		data: { configPathSet: true },
-		timestamp: Date.now(),
-	}),
-}).catch(() => {});
-// #endregion
+/**
+ * Alchemy + @astrojs/cloudflare dev runs HTML from `dist/server` while Vite does not
+ * expose matching `/_astro/*` URLs, so the browser gets 404 + empty Content-Type.
+ * Serve hashed client chunks from `dist/client` when present (after `astro build`).
+ */
+function serveBuiltAstroClientChunks() {
+	const clientDir = path.join(__dirname, "dist/client");
+	return {
+		name: "serve-built-astro-client-chunks",
+		enforce: /** @type {"pre"} */ ("pre"),
+		/** @param {any} server */
+		configureServer(server) {
+			server.middlewares.use((/** @type {any} */ req, /** @type {any} */ res, /** @type {any} */ next) => {
+				if (req.method !== "GET" && req.method !== "HEAD") {
+					next();
+					return;
+				}
+				const pathname = (req.url ?? "").split("?")[0] ?? "";
+				if (!pathname.startsWith("/_astro/")) {
+					next();
+					return;
+				}
+				const abs = path.normalize(path.join(clientDir, pathname.slice(1)));
+				if (!abs.startsWith(clientDir)) {
+					next();
+					return;
+				}
+				fs.stat(abs, (err, st) => {
+					if (err || !st.isFile()) {
+						next();
+						return;
+					}
+					const ext = path.extname(abs);
+					if (ext === ".js") {
+						res.setHeader("Content-Type", "application/javascript");
+					} else if (ext === ".css") {
+						res.setHeader("Content-Type", "text/css");
+					}
+					if (req.method === "HEAD") {
+						res.statusCode = 200;
+						res.end();
+						return;
+					}
+					fs.createReadStream(abs).pipe(res);
+				});
+			});
+		},
+	};
+}
 
 // https://astro.build/config
 export default defineConfig({
@@ -91,6 +123,6 @@ export default defineConfig({
 		}),
 	],
 	vite: {
-		plugins: [tailwindcss()],
+		plugins: [serveBuiltAstroClientChunks(), tailwindcss()],
 	},
 });
