@@ -12,13 +12,13 @@
   "dependencies": {
     "@libsql/client": "catalog:",
     "@tehs-aerial-images/env": "workspace:*",
-    "astro": "^6.0.1",
+    "astro": "6.1.5",
     "dotenv": "catalog:",
     "libsql": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@astrojs/cloudflare": "^13.0.1",
+    "@astrojs/cloudflare": "13.1.8",
     "@cloudflare/workers-types": "catalog:",
     "@tailwindcss/vite": "^4.1.18",
     "@tehs-aerial-images/config": "workspace:*",

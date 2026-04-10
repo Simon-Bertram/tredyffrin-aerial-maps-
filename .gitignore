@@ -52,3 +52,6 @@ temp
 
 # Local pnpm content-addressable store
 .pnpm-store/
+
+# Cloudflare
+apps/web/.wrangler/*
