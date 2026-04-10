@@ -1,7 +1,12 @@
 import alchemy from "alchemy";
-import { Astro } from "alchemy/cloudflare";
-import { Worker } from "alchemy/cloudflare";
-import { D1Database, R2Bucket } from "alchemy/cloudflare";
+import {
+  Astro,
+  D1Database,
+  KVNamespace,
+  R2Bucket,
+  Worker,
+  WorkerLoader,
+} from "alchemy/cloudflare";
 import { config } from "dotenv";
 
 // 1. Load environment variables from multiple .env files
@@ -15,25 +20,36 @@ process.env.ALCHEMY_CI_STATE_STORE_CHECK ??= "false";
 // 3. Create the Alchemy application.
 const app = await alchemy("tehs-aerial-images");
 
-// 4. Initialize the D1 database.
+// 4. Initialize the D1 database (Drizzle / Hono API).
 const db = await D1Database("database", {
   migrationsDir: "../../packages/db/src/migrations",
 });
 
-// 5. Initialize the R2 bucket.
+// 5. EmDash CMS uses its own D1 (Kysely migrations managed by EmDash).
+const emdashDb = await D1Database("emdash-database");
+
+// 6. Initialize the R2 bucket (API uses R2; web worker also binds MEDIA → same bucket).
 const r2 = await R2Bucket("r2");
 
-// 6. Create the Astro website.
+// 6b. KV for Astro / EmDash session store (@astrojs/cloudflare expects binding "SESSION").
+const sessionKv = await KVNamespace("emdash-sessions");
+
+// 7. Create the Astro website.
 export const web = await Astro("web", {
   cwd: "../../apps/web",
   entrypoint: "dist/server/entry.mjs",
   assets: "dist/client",
+  compatibilityFlags: ["nodejs_compat", "disable_nodejs_process_v2"],
   bindings: {
     PUBLIC_SERVER_URL: alchemy.env.PUBLIC_SERVER_URL!,
+    DB: emdashDb,
+    MEDIA: r2,
+    SESSION: sessionKv,
+    LOADER: WorkerLoader(),
   },
 });
 
-// 7. Create the server worker.
+// 8. Create the server worker.
 export const server = await Worker("server", {
   cwd: "../../apps/server",
   entrypoint: "src/index.ts",
