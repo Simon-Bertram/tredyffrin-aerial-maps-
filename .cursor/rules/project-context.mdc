@@ -1,0 +1,27 @@
+---
+description: Always applied to provide project context and status
+globs: ["**/*"]
+alwaysApply: true
+---
+
+# Project Status
+
+**Current sprint:** EmDash CMS integration and Cloudflare (Alchemy) deployment hardening.
+
+**Last milestone:** Core monorepo stack in place — Astro (`apps/web`), Workers/Hono API, shared Drizzle schema (`packages/db`), edge-runtime conventions.
+
+**Next step:** Complete EmDash CMS + R2 wiring, verify Alchemy deploys, and keep blog/content routes aligned with CMS output.
+
+**Build / tooling notes (from prior debugging):** `@cloudflare/vite-plugin` resolves Wrangler `main` and requires the file to exist when `main` ends in `.js`/`.mjs`, but Astro only writes `dist/server/entry.mjs` later in the build. The project keeps Wrangler `main` as `@astrojs/cloudflare/entrypoints/server` (see `wrangler.transform` on the Astro resource in `packages/infra/alchemy.run.ts` and `apps/web/.alchemy/local/wrangler.jsonc`). The Hono server build marks `cloudflare:workers` external in `apps/server/tsdown.config.ts` because `packages/env` re-exports it. Import Portable Text via `import { PortableText } from "astro-portabletext"` — not the unexported `components/PortableText.astro` subpath (Vite 7 enforces package `exports`).
+
+# Project context
+
+- **Repository:** `tehs-aerial-images` — pnpm workspaces + Turborepo (`turbo`).
+- **Frontend:** `apps/web` — Astro (islands / server components as applicable).
+- **Backend:** Cloudflare Workers (Hono); use `c.env.DB` for D1; no Node built-ins on the edge — see `edge-runtime.mdc`.
+- **Shared data:** `packages/db` — Drizzle; run `pnpm build` at root when shared types change.
+- **Infra:** `packages/infra` — Alchemy; follow `alchemy-deployment.mdc` before Wrangler-only changes.
+
+**Environment variables:** `packages/infra/alchemy.run.ts` loads `packages/infra/.env`, `apps/web/.env`, and `apps/server/.env` (via `dotenv`). Use `apps/web/.env` for values the Astro app needs locally (`PUBLIC_*`, EmDash-related options as documented). Use `packages/infra/.env` (gitignored) for Alchemy/Cloudflare deploy credentials and deploy-only values. For sensitive Worker bindings, use `alchemy.secret(process.env.VAR)` in `alchemy.run.ts` and supply values from the environment at deploy time; see [Alchemy Secret](https://alchemy.run/concepts/secret/).
+
+When suggesting code or commands, prefer patterns already used in this repo and the other `.cursor/rules/*.mdc` files over generic stack assumptions.

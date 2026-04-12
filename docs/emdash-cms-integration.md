@@ -13,7 +13,37 @@ Official references:
 - [EmDash on GitHub](https://github.com/emdash-cms/emdash)
 - [EmDash Cloudflare demo `astro.config.mjs`](https://github.com/emdash-cms/emdash/blob/main/demos/cloudflare/astro.config.mjs) (pattern reference; this repo uses `alchemy()` instead of raw `cloudflare()`)
 
-## 2. Architecture (high level)
+## 2. Two D1 databases: ownership, enforcement, and map content
+
+### 2.1 Which database owns what
+
+| D1 resource (Alchemy) | Worker binding | ORM / migrations | Purpose |
+|----------------------|----------------|------------------|---------|
+| `emdash-database` | Web `DB` | **EmDash / Kysely only** — EmDash CLI (e.g. `pnpm --filter web exec emdash migrate` per EmDash docs) | CMS collections, admin, EmDash-managed rows |
+| `database` | API `DB` | **Drizzle only** — `packages/db` migrations | API-only data: map tile metadata, GeoJSON-sidecar indexes, sessions, anything **not** defined by EmDash’s schema |
+
+Do **not** point the web worker’s `DB` at the Drizzle D1. Do **not** repoint the API worker’s `DB` to `emdashDb` unless you adopt the explicit exception in §2.3.
+
+### 2.2 Rules that prevent schema drift
+
+1. **EmDash is the sole migration owner for CMS data** — collections and schema changes go through EmDash (admin, seeds, EmDash migrations). Never add Drizzle migrations that `CREATE` / `ALTER` EmDash-owned tables.
+2. **Drizzle is the sole migration owner for the API D1** — define tables in `packages/db` only for data the Hono API owns. Never duplicate EmDash collection tables in Drizzle as the live source of truth for the same CMS rows.
+3. **After EmDash schema changes** — run `pnpm --filter web emdash:types` (with dev running when the CLI requires it) or update [apps/web/emdash-env.d.ts](../apps/web/emdash-env.d.ts) by hand.
+
+### 2.3 Map and aerial content: CMS + API data
+
+**Chosen integration pattern for this repo: Astro-first CMS reads.** Pages that need posts, labels, or other CMS fields use **`getEmDashCollection`** / **`getEmDashEntry`** from `emdash` in `.astro` frontmatter (see §7). **Aerial tiles, map overlays, and derived geodata** that live outside EmDash’s schema belong in **Drizzle** on the API D1 and are exposed via **Hono**. The map UI may combine both: Astro/server-rendered CMS snippets and client fetches to the API for spatial data.
+
+That preserves a single writer (EmDash/Kysely) for CMS tables and avoids Drizzle migrations colliding with EmDash’s D1.
+
+**Escalation paths (document and review before use):**
+
+- **Sync / denormalize** — a scheduled job or Queue consumer copies stable fields from EmDash into Drizzle tables you own; Hono reads only Drizzle.
+- **Read-only EmDash D1 on the API worker** — add a second D1 binding to `emdashDb` in Alchemy for the server worker and query with **raw D1 SQL** (no Drizzle schema for EmDash tables); you must track upstream EmDash schema changes manually.
+
+Do **not** point Drizzle at EmDash tables on the same migration track or merge migration directories.
+
+## 3. Architecture (high level)
 
 ```mermaid
 flowchart TB
@@ -32,7 +62,7 @@ flowchart TB
 
 **Bindings (summary):** Web worker: `DB` (EmDash D1), `MEDIA` (R2), `SESSION` (KV), optional `LOADER` (sandboxed plugins); flags `nodejs_compat`, `disable_nodejs_process_v2`. API worker: `DB` (Drizzle D1), `R2`.
 
-## 3. Dependencies (`apps/web`)
+## 4. Dependencies (`apps/web`)
 
 Install from **`apps/web`** with pnpm (monorepo convention):
 
@@ -54,9 +84,9 @@ Use **`@astrojs/react` v5+** with **Astro 6** to satisfy EmDash’s peer range.
 - `"emdash": { "seed": "seed/seed.json" }` — default collections/content seed path.
 - Script: `"emdash:types": "emdash types"` — regenerate collection typings when the live schema changes (requires a running dev server and reachable admin in practice).
 
-## 4. Alchemy (`packages/infra/alchemy.run.ts`)
+## 5. Alchemy (`packages/infra/alchemy.run.ts`)
 
-### 4.1 Second D1 for EmDash
+### 5.1 Second D1 for EmDash
 
 Keep the existing Drizzle database:
 
@@ -72,7 +102,7 @@ Add a **second** database **without** Drizzle migrations (EmDash owns schema):
 const emdashDb = await D1Database("emdash-database");
 ```
 
-### 4.2 R2 and KV
+### 5.2 R2 and KV
 
 - Reuse the same **`R2Bucket("r2")`** for both workers if you want one bucket: bind it as **`MEDIA`** on the web worker (EmDash expects that binding name) and keep **`R2`** (or your name) on the API worker.
 - Create a **KV namespace** for Astro’s session driver (default binding name **`SESSION`**):
@@ -83,7 +113,7 @@ const sessionKv = await KVNamespace("emdash-sessions");
 
 `@astrojs/cloudflare` enables the KV session driver and expects the **`SESSION`** binding unless you customize it.
 
-### 4.3 Web worker bindings
+### 5.3 Web worker bindings
 
 On **`Astro("web", { ... })`**:
 
@@ -93,13 +123,13 @@ On **`Astro("web", { ... })`**:
   - `DB: emdashDb` — EmDash D1.
   - `MEDIA: r2` — same bucket resource, **binding name** `MEDIA`.
   - `SESSION: sessionKv`.
-  - `LOADER: WorkerLoader()` — only if you use **sandboxed** EmDash plugins (`sandbox()` + `sandboxed: [...]`). See §8 (paid plan).
+  - `LOADER: WorkerLoader()` — only if you use **sandboxed** EmDash plugins (`sandbox()` + `sandboxed: [...]`). See §9 (paid plan).
 
 Do **not** point the web worker’s `DB` at the Drizzle D1.
 
-## 5. Astro config (`apps/web/astro.config.mjs`)
+## 6. Astro config (`apps/web/astro.config.mjs`)
 
-### 5.1 Adapter: Alchemy + `configPath` (critical for local dev)
+### 6.1 Adapter: Alchemy + `configPath` (critical for local dev)
 
 Use:
 
@@ -124,7 +154,7 @@ export default defineConfig({
 
 `astro.config.mjs` runs in **Node** at CLI time; using `node:path` / `node:url` here is normal and does not run on the Worker.
 
-### 5.2 Integrations order
+### 6.2 Integrations order
 
 1. **`react()`** — before EmDash.
 2. **`emdash({ ... })`** — database, storage, auth, media, plugins.
@@ -168,11 +198,11 @@ emdash({
 
 **Cloudflare Access (optional):** if `process.env.CF_ACCESS_TEAM_DOMAIN` is set, configure `auth: access({ teamDomain, audienceEnvVar: "CF_ACCESS_AUDIENCE", ... })`. When Access is enabled, passkey admin behavior is replaced per EmDash docs.
 
-### 5.3 Clean Vite plugins
+### 6.3 Clean Vite plugins
 
 In a minimal setup, `vite.plugins` should include **`tailwindcss()`** (if you use Tailwind) only. Remove any **temporary** dev-only middleware (e.g. logging `/_astro` responses) before treating the integration as final.
 
-## 6. Theme / content consumption
+## 7. Theme / content consumption
 
 - **Admin:** `/_emdash/admin`
 - **Query API:** `getEmDashCollection`, `getEmDashEntry` from `emdash` in `.astro` frontmatter (see [EmDash README](https://github.com/emdash-cms/emdash)).
@@ -182,7 +212,7 @@ In a minimal setup, `vite.plugins` should include **`tailwindcss()`** (if you us
 
 Avoid Astro routes under `/_emdash/*`.
 
-## 7. Environment variables and where to set them
+## 8. Environment variables and where to set them
 
 | Variable | Purpose |
 |----------|---------|
@@ -200,12 +230,12 @@ Avoid Astro routes under `/_emdash/*`.
 
 `PUBLIC_SERVER_URL` remains a normal public var for the web app (Alchemy binding + Astro `env` schema as in this repo).
 
-## 8. Paid Cloudflare Workers considerations
+## 9. Paid Cloudflare Workers considerations
 
 - **Dynamic Workers / Worker Loader** (`LOADER` binding + `sandbox()` + `sandboxed` plugins): EmDash documents these as requiring a **paid** Workers capability. To stay off that path, remove **`WorkerLoader()`** from web bindings, and drop **`sandboxRunner`** / **`sandboxed`** (and related plugins) from `emdash({ ... })`.
 - **`nodejs_compat`** is not the same as Dynamic Workers; it is normal for this stack on Workers.
 
-## 9. Verification checklist
+## 10. Verification checklist
 
 1. `pnpm install`
 2. `pnpm run dev` (runs Alchemy + Astro + API) — ensure `apps/web/.alchemy/local/wrangler.jsonc` exists after Alchemy runs.
@@ -214,21 +244,21 @@ Avoid Astro routes under `/_emdash/*`.
 5. `pnpm run build` (or `pnpm --filter web build`) — should complete; expect warnings if media env or sandbox bindings are missing.
 6. Confirm API worker still uses **`DB`** = Drizzle D1 only.
 
-## 10. Troubleshooting
+## 11. Troubleshooting
 
 | Symptom | Likely cause |
 |---------|----------------|
-| `Failed to load url node:module` in Vite dev | SSR worker not loading Wrangler compat flags; set **`configPath`** to `apps/web/.alchemy/local/wrangler.jsonc` on the `alchemy()` adapter (§5.1). |
+| `Failed to load url node:module` in Vite dev | SSR worker not loading Wrangler compat flags; set **`configPath`** to `apps/web/.alchemy/local/wrangler.jsonc` on the `alchemy()` adapter (§6.1). |
 | `Content config not loaded` | Astro content layer message; EmDash uses live collections — often benign if admin works. |
 | Missing `CF_MEDIA_*` / Stream warnings | Vars not in Worker env; use **`.dev.vars`** or Alchemy bindings. |
 | `emdash types` / typegen fetch errors | Admin not reachable, CSRF, or dev not running; use hand-maintained `emdash-env.d.ts` or fix network/session. |
-| Sandbox / LOADER errors on free tier | Remove Worker Loader + sandboxed plugins (§8). |
+| Sandbox / LOADER errors on free tier | Remove Worker Loader + sandboxed plugins (§9). |
 
-## 11. Cursor / repo conventions
+## 12. Cursor / repo conventions
 
-- **`.cursor/rules/emdash.mdc`** — admin path `/_emdash/admin`, Kysely vs Drizzle split, typegen note, globs for pages/seed/env typings.
+- **`.cursor/rules/emdash.mdc`** — admin path `/_emdash/admin`, two-D1 ownership (§2), typegen note, globs for pages/seed/env typings and `packages/db` migrations.
 
-## 12. File index (this integration)
+## 13. File index (this integration)
 
 | Path | Role |
 |------|------|
@@ -239,6 +269,7 @@ Avoid Astro routes under `/_emdash/*`.
 | [apps/web/seed/seed.json](../apps/web/seed/seed.json) | Default blog-style seed (if present) |
 | [apps/web/emdash-env.d.ts](../apps/web/emdash-env.d.ts) | `EmDashCollections` augmentation |
 | [apps/web/src/pages/blog/](../apps/web/src/pages/blog/) | Example listing + `[slug]` pages |
+| [packages/db/src/schema/index.ts](../packages/db/src/schema/index.ts) | Drizzle schema for **API D1 only** — not EmDash tables |
 | [.cursor/rules/emdash.mdc](../.cursor/rules/emdash.mdc) | Agent/project rules |
 
 ---

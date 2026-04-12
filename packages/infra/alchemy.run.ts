@@ -39,6 +39,13 @@ export const web = await Astro("web", {
   cwd: "../../apps/web",
   entrypoint: "dist/server/entry.mjs",
   assets: "dist/client",
+  // Vite plugin requires `main` not be a missing .mjs; package entry matches @astrojs/cloudflare default.
+  wrangler: {
+    transform: async (spec) => ({
+      ...spec,
+      main: "@astrojs/cloudflare/entrypoints/server",
+    }),
+  },
   compatibilityFlags: ["nodejs_compat", "disable_nodejs_process_v2"],
   bindings: {
     PUBLIC_SERVER_URL: alchemy.env.PUBLIC_SERVER_URL!,

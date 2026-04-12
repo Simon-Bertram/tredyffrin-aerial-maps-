@@ -1,13 +1,26 @@
 ---
 description: Rules for EmDash CMS integration and R2 storage.
 globs:
-  ["apps/web/src/pages/**/*", "apps/web/seed/**/*", "apps/web/emdash-env.d.ts"]
+  [
+    "apps/web/src/pages/**/*",
+    "apps/web/seed/**/*",
+    "apps/web/emdash-env.d.ts",
+    "packages/db/src/schema/**/*",
+    "packages/db/src/migrations/**/*",
+  ]
 alwaysApply: false
 ---
 
 # EmDash Standards
 
-- EmDash uses Kysely internally but we use Drizzle for the Hono API (`apps/server`).
+## Two D1 databases (do not merge)
+
+- **EmDash D1** (`emdash-database` → web worker `DB`): schema and migrations owned **only** by EmDash / Kysely. Use the EmDash CLI for migrations; never add Drizzle migrations that create or alter EmDash tables.
+- **API D1** (`database` → Hono `DB`): **Drizzle** in `packages/db` only, for API-owned data (map metadata, indexes, etc.).
+- **Map / CMS integration pattern for this repo:** read CMS collections in **Astro** with `getEmDashCollection` / `getEmDashEntry`. Put non-CMS geodata in Drizzle and serve it from Hono. Do not duplicate live EmDash collection tables in Drizzle. Escalation options (sync jobs or read-only raw SQL on a second binding) require an explicit design note in `docs/emdash-cms-integration.md` §2.3.
+
+## Day-to-day
+
 - After changing collections or fields (admin UI or `seed/seed.json`), run `pnpm --filter web emdash:types` with dev running, or update [apps/web/emdash-env.d.ts](apps/web/emdash-env.d.ts) by hand.
 - IMAGES: Use `z.image()` for aerial photos to trigger the R2 upload pipeline.
 - ADMIN: EmDash lives under `/_emdash/admin`. Do not add Astro routes that conflict with `/_emdash/*`.
