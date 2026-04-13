@@ -4,14 +4,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import react from "@astrojs/react";
 import tailwindcss from "@tailwindcss/vite";
-import {
-  access,
-  cloudflareImages,
-  cloudflareStream,
-  d1,
-  r2,
-  sandbox,
-} from "@emdash-cms/cloudflare";
+import { access, d1, r2, sandbox } from "@emdash-cms/cloudflare";
 import { formsPlugin } from "@emdash-cms/plugin-forms";
 import { webhookNotifierPlugin } from "@emdash-cms/plugin-webhook-notifier";
 import emdash from "emdash/astro";
@@ -118,18 +111,6 @@ export default defineConfig({
       storage: r2({ binding: "MEDIA" }),
       ...(publicPasskeyOrigin ? { passkeyPublicOrigin: publicPasskeyOrigin } : {}),
       ...(emdashAuth ? { auth: emdashAuth } : {}),
-      mediaProviders:
-        /** @type {import('emdash/media').MediaProviderDescriptor[]} */ ([
-          cloudflareImages({
-            accountIdEnvVar: "CF_MEDIA_ACCOUNT_ID",
-            apiTokenEnvVar: "CF_MEDIA_API_TOKEN",
-            accountHashEnvVar: "CF_IMAGES_ACCOUNT_HASH",
-          }),
-          cloudflareStream({
-            accountIdEnvVar: "CF_MEDIA_ACCOUNT_ID",
-            apiTokenEnvVar: "CF_MEDIA_API_TOKEN",
-          }),
-        ]),
       plugins: [
         /** @type {import('emdash').PluginDescriptor} */ (formsPlugin()),
       ],

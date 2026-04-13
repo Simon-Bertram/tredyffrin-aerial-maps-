@@ -13,6 +13,8 @@ Official references:
 - [EmDash on GitHub](https://github.com/emdash-cms/emdash)
 - [EmDash Cloudflare demo `astro.config.mjs`](https://github.com/emdash-cms/emdash/blob/main/demos/cloudflare/astro.config.mjs) (pattern reference; this repo uses `alchemy()` instead of raw `cloudflare()`)
 
+**See also:** [cms-media-and-astro-images.md](./cms-media-and-astro-images.md) — R2-only CMS vs Cloudflare Images product, `CF_IMAGES_ACCOUNT_HASH`, `.dev.vars`, and Astro `<Image />` / `imageService: "cloudflare"`.
+
 ## 2. Two D1 databases: ownership, enforcement, and map content
 
 ### 2.1 Which database owns what
@@ -60,7 +62,7 @@ flowchart TB
   web --> theme
 ```
 
-**Bindings (summary):** Web worker: `DB` (EmDash D1), `MEDIA` (R2), `SESSION` (KV), optional `LOADER` (sandboxed plugins); flags `nodejs_compat`, `disable_nodejs_process_v2`. API worker: `DB` (Drizzle D1), `R2`.
+**Bindings (summary):** Web worker: `DB` (EmDash D1), `MEDIA` (R2), `SESSION` (KV), optional `LOADER` (sandboxed plugins; see §5.4 for **`PluginBridge`** on the worker entry); flags `nodejs_compat`, `disable_nodejs_process_v2`. API worker: `DB` (Drizzle D1), `R2`.
 
 ## 4. Dependencies (`apps/web`)
 
@@ -69,7 +71,7 @@ Install from **`apps/web`** with pnpm (monorepo convention):
 | Package | Role |
 |--------|------|
 | `emdash`, `emdash/astro` | CMS integration |
-| `@emdash-cms/cloudflare` | `d1()`, `r2()`, `sandbox()`, `access()`, `cloudflareImages()`, `cloudflareStream()` |
+| `@emdash-cms/cloudflare` | `d1()`, `r2()`, `sandbox()`, `access()`; optional `cloudflareImages()`, `cloudflareStream()` for extra media providers ([cms-media-and-astro-images.md](./cms-media-and-astro-images.md)) |
 | `@astrojs/react`, `react`, `react-dom` | EmDash peer dependencies |
 | `@tanstack/react-query`, `@tanstack/react-router` | EmDash peer dependencies |
 | `kysely` | Peer of `@emdash-cms/cloudflare` |
@@ -127,6 +129,28 @@ On **`Astro("web", { ... })`**:
 
 Do **not** point the web worker’s `DB` at the Drizzle D1.
 
+### 5.4 Sandbox runner availability (`LOADER` + `PluginBridge`)
+
+The Cloudflare adapter (`sandboxRunner: sandbox()` → `@emdash-cms/cloudflare/sandbox`) only treats the sandbox as **available** when **both** of the following are true at runtime:
+
+1. **`env.LOADER`** — the [Worker Loader](https://developers.cloudflare.com/workers/runtime-apis/bindings/worker-loader/) binding (Wrangler `worker_loaders` / Alchemy `LOADER: WorkerLoader()`). This repo already wires that on the web worker when you use sandboxed plugins (see §5.3 and [packages/infra/alchemy.run.ts](../packages/infra/alchemy.run.ts)).
+2. **`exports.PluginBridge`** — a **named export** on the **main worker module**. The sandbox code reads `PluginBridge` from `cloudflare:workers` **`exports`**, which always reflects the **program entry’s** top-level exports, not a dependency chunk.
+
+The stock Astro Cloudflare server entry ([`@astrojs/cloudflare/entrypoints/server`](https://github.com/withastro/astro/tree/main/packages/integrations/cloudflare)) exports only **`default`** (`{ fetch }`). It does **not** re-export `PluginBridge`, so `PluginBridge` is missing unless you add it.
+
+**If you need sandboxed plugins to load (not only “skip sandbox” in logs):**
+
+- Introduce a **small worker entry** that re-exports the Astro handler and `PluginBridge`, then point Wrangler **`main`** at that file (and keep Alchemy’s `wrangler.transform` / `main` consistent with that entry so production builds use the same surface). For example:
+
+```ts
+export { default } from "@astrojs/cloudflare/entrypoints/server";
+export { PluginBridge } from "@emdash-cms/cloudflare/sandbox";
+```
+
+- Expect **Worker Loader** to require a **paid** Workers capability (§9). **Local Vite / Miniflare** may not fully match production for Worker Loader and loopback exports; you may still see *Sandbox runner not available (missing bindings)* locally even with correct config until you run on real `workerd` or a deployed Worker.
+
+**If you do not need sandboxing:** remove `LOADER`, `sandboxRunner`, `sandboxed`, and sandbox-only plugins (§9) so the stack stays on the free tier.
+
 ## 6. Astro config (`apps/web/astro.config.mjs`)
 
 ### 6.1 Adapter: Alchemy + `configPath` (critical for local dev)
@@ -159,18 +183,11 @@ export default defineConfig({
 1. **`react()`** — before EmDash.
 2. **`emdash({ ... })`** — database, storage, auth, media, plugins.
 
-Example shape (match binding names to Alchemy):
+Example shape (match binding names to Alchemy). **This repo uses R2-only CMS media** (no `mediaProviders`); add `cloudflareImages()` / `cloudflareStream()` only if you want the Cloudflare Images / Stream products in the media library — see [cms-media-and-astro-images.md](./cms-media-and-astro-images.md).
 
 ```ts
 import emdash from "emdash/astro";
-import {
-  d1,
-  r2,
-  access,
-  sandbox,
-  cloudflareImages,
-  cloudflareStream,
-} from "@emdash-cms/cloudflare";
+import { d1, r2, access, sandbox } from "@emdash-cms/cloudflare";
 import { formsPlugin } from "@emdash-cms/plugin-forms";
 import { webhookNotifierPlugin } from "@emdash-cms/plugin-webhook-notifier";
 
@@ -178,17 +195,6 @@ emdash({
   database: d1({ binding: "DB", session: "disabled" }), // or "auto" if D1 sessions/replication configured
   storage: r2({ binding: "MEDIA" }),
   ...(emdashAuth ? { auth: emdashAuth } : {}),
-  mediaProviders: [
-    cloudflareImages({
-      accountIdEnvVar: "CF_MEDIA_ACCOUNT_ID",
-      apiTokenEnvVar: "CF_MEDIA_API_TOKEN",
-      accountHashEnvVar: "CF_IMAGES_ACCOUNT_HASH",
-    }),
-    cloudflareStream({
-      accountIdEnvVar: "CF_MEDIA_ACCOUNT_ID",
-      apiTokenEnvVar: "CF_MEDIA_API_TOKEN",
-    }),
-  ],
   plugins: [formsPlugin()],
   sandboxed: [webhookNotifierPlugin()],
   sandboxRunner: sandbox(),
@@ -232,7 +238,7 @@ Avoid Astro routes under `/_emdash/*`.
 
 ## 9. Paid Cloudflare Workers considerations
 
-- **Dynamic Workers / Worker Loader** (`LOADER` binding + `sandbox()` + `sandboxed` plugins): EmDash documents these as requiring a **paid** Workers capability. To stay off that path, remove **`WorkerLoader()`** from web bindings, and drop **`sandboxRunner`** / **`sandboxed`** (and related plugins) from `emdash({ ... })`.
+- **Dynamic Workers / Worker Loader** (`LOADER` binding + `sandbox()` + `sandboxed` plugins): EmDash documents these as requiring a **paid** Workers capability. Binding `LOADER` in Alchemy alone is not enough for a working sandbox: see **§5.4** (`PluginBridge` on the worker entry and local vs production behavior). To stay off that path, remove **`WorkerLoader()`** from web bindings, and drop **`sandboxRunner`** / **`sandboxed`** (and related plugins) from `emdash({ ... })`.
 - **`nodejs_compat`** is not the same as Dynamic Workers; it is normal for this stack on Workers.
 
 ## 10. Verification checklist
@@ -241,7 +247,7 @@ Avoid Astro routes under `/_emdash/*`.
 2. `pnpm run dev` (runs Alchemy + Astro + API) — ensure `apps/web/.alchemy/local/wrangler.jsonc` exists after Alchemy runs.
 3. Open `http://localhost:4321/_emdash/admin` — complete setup / passkey (or Access).
 4. Open themed routes (e.g. `/blog`) if you added `getEmDashCollection` pages.
-5. `pnpm run build` (or `pnpm --filter web build`) — should complete; expect warnings if media env or sandbox bindings are missing.
+5. `pnpm run build` (or `pnpm --filter web build`) — should complete; expect warnings if media env or sandbox bindings are missing. If you rely on sandboxed plugins, confirm **§5.4** (`PluginBridge` + `LOADER`) on the target runtime.
 6. Confirm API worker still uses **`DB`** = Drizzle D1 only.
 
 ## 11. Troubleshooting
@@ -252,6 +258,7 @@ Avoid Astro routes under `/_emdash/*`.
 | `Content config not loaded` | Astro content layer message; EmDash uses live collections — often benign if admin works. |
 | Missing `CF_MEDIA_*` / Stream warnings | Vars not in Worker env; use **`.dev.vars`** or Alchemy bindings. |
 | `emdash types` / typegen fetch errors | Admin not reachable, CSRF, or dev not running; use hand-maintained `emdash-env.d.ts` or fix network/session. |
+| `Sandbox runner not available (missing bindings)` in logs | Runner requires **`env.LOADER`** and **`exports.PluginBridge`** on the main worker module (§5.4). Alchemy may already provide `LOADER`; missing **`PluginBridge`** re-export from the worker entry, or **local dev** not emulating Worker Loader, is a common cause. |
 | Sandbox / LOADER errors on free tier | Remove Worker Loader + sandboxed plugins (§9). |
 
 ## 12. Cursor / repo conventions

@@ -14,7 +14,7 @@ Copy `apps/web/.env.example` to `apps/web/.env` and adjust:
 | Variable | Purpose |
 | --- | --- |
 | `CF_ACCESS_TEAM_DOMAIN`, `CF_ACCESS_AUDIENCE` | Optional. Cloudflare Access for admin; when set, passkey-only admin auth is replaced per EmDash behavior. |
-| `CF_MEDIA_ACCOUNT_ID`, `CF_MEDIA_API_TOKEN`, `CF_IMAGES_ACCOUNT_HASH` | Optional. Cloudflare Images / Stream for EmDash media features. |
+| `CF_MEDIA_ACCOUNT_ID`, `CF_MEDIA_API_TOKEN`, `CF_IMAGES_ACCOUNT_HASH` | Optional. Only if you add Cloudflare Images / Stream to `emdash({ mediaProviders })` ([cms-media-and-astro-images.md](./cms-media-and-astro-images.md)); this repo uses R2-only CMS media by default. |
 
 Infra-related values used at deploy time are loaded where Alchemy expects them (see `packages/infra/alchemy.run.ts` and `.cursor/rules/alchemy-deployment.mdc`).
 
