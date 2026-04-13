@@ -6,5 +6,4 @@ export default defineConfig({
   outDir: "./dist",
   clean: true,
   noExternal: [/@tehs-aerial-images\/.*/],
-  external: ["cloudflare:workers"],
 });

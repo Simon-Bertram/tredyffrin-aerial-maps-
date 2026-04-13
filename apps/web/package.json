@@ -7,30 +7,19 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "dev:bare": "astro dev",
-    "emdash:types": "emdash types"
+    "dev:bare": "astro dev"
   },
   "dependencies": {
     "@astrojs/react": "^5.0.3",
-    "@cloudflare/kumo": "^1.18.0",
-    "@emdash-cms/cloudflare": "0.1.1",
-    "@emdash-cms/plugin-forms": "^0.1.1",
-    "@emdash-cms/plugin-webhook-notifier": "^0.1.1",
     "@fontsource-variable/inter": "^5.2.8",
     "@libsql/client": "catalog:",
-    "@phosphor-icons/react": "^2.1.10",
-    "@tanstack/react-query": "^5.97.0",
-    "@tanstack/react-router": "^1.168.10",
     "@tehs-aerial-images/env": "workspace:*",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "astro": "6.1.5",
-    "astro-portabletext": "^0.11.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "dotenv": "catalog:",
-    "emdash": "0.1.1",
-    "kysely": "^0.27.6",
     "libsql": "catalog:",
     "lucide-react": "^1.8.0",
     "radix-ui": "^1.4.3",
@@ -40,9 +29,6 @@
     "tailwind-merge": "^3.5.0",
     "tw-animate-css": "^1.4.0",
     "zod": "catalog:"
-  },
-  "emdash": {
-    "seed": "seed/seed.json"
   },
   "devDependencies": {
     "@astrojs/cloudflare": "13.1.8",
