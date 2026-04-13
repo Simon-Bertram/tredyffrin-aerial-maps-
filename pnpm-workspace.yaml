@@ -6,11 +6,11 @@ allowBuilds:
   sharp: true
   workerd: true
 catalog:
-  "@cloudflare/workers-types": ^4.20251213.0
+  "@cloudflare/workers-types": ^4.20260413.1
   "@libsql/client": 0.15.15
-  "@types/node": ^22.13.14
+  "@types/node": ^22.19.17
   alchemy: ^0.90.0
-  dotenv: ^17.2.2
+  dotenv: ^17.4.2
   libsql: 0.5.22
-  typescript: ^5
-  zod: ^4.1.13
+  typescript: ^5.9.3
+  zod: ^4.3.6

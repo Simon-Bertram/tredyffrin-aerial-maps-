@@ -1,0 +1,6 @@
+# Local dev (Miniflare) can ship a workerd build whose max compatibility date is
+# one day behind calendar "today". @cloudflare/vite-plugin defaults to today's date
+# when no compatibility_date is set, which triggers ERR_RUNTIME_FAILURE.
+# See docs/troubleshooting-local-cloudflare-dev.md
+name = "web"
+compatibility_date = "2026-04-12"
