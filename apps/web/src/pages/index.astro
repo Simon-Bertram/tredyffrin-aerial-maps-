@@ -3,9 +3,11 @@ import Layout from "../layouts/Layout.astro";
 ---
 
 <Layout title="tehs-aerial-images">
-  <main>
-    <div class="container mx-auto max-w-3xl px-4 py-2">
-      <h1 class="text-4xl font-bold">Welcome to tehs-aerial-images</h1>
-    </div>
-  </main>
+	<main class="container mx-auto max-w-3xl px-4 py-8">
+		<h1 class="text-4xl font-bold text-white">Welcome to tehs-aerial-images</h1>
+		<nav class="mt-6 flex flex-wrap gap-4 text-sky-400">
+			<a class="hover:underline" href="/blog">Blog (EmDash)</a>
+			<a class="hover:underline" href="/_emdash/admin">EmDash admin</a>
+		</nav>
+	</main>
 </Layout>

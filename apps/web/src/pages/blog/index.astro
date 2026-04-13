@@ -1,0 +1,50 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { getEmDashCollection } from "emdash";
+
+const { entries: posts, error } = await getEmDashCollection("posts", {
+	status: "published",
+});
+---
+
+<Layout title="Blog">
+<div class="container mx-auto max-w-3xl px-4 py-8">
+		<h1 class="mb-6 text-2xl font-semibold text-white">Blog</h1>
+		{
+			error ? (
+				<p class="text-red-300">
+					Could not load posts. Seed the CMS from{" "}
+					<code class="rounded bg-neutral-800 px-1">/_emdash/admin</code> if this is a fresh
+					database.
+				</p>
+			) : posts.length === 0 ? (
+				<p class="text-neutral-400">
+					No posts yet. Add content in{" "}
+					<a class="text-sky-400 underline" href="/_emdash/admin">
+						EmDash admin
+					</a>
+					.
+				</p>
+			) : (
+				<ul class="grid gap-4">
+					{posts.map((post) => {
+						const data = post.data;
+						const slug = data.slug;
+						const href =
+							slug && typeof slug === "string" ? `/blog/${slug}` : "#";
+						return (
+							<li class="rounded-lg border border-neutral-800 bg-neutral-900/50 p-4">
+								<a class="text-lg font-medium text-sky-400 hover:underline" href={href}>
+									{String(data.title ?? "Untitled")}
+								</a>
+								{data.excerpt ? (
+									<p class="mt-2 text-sm text-neutral-400">{String(data.excerpt)}</p>
+								) : null}
+							</li>
+						);
+					})}
+				</ul>
+			)
+		}
+	</div>
+</Layout>

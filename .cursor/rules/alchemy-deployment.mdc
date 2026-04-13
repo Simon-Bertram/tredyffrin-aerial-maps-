@@ -1,0 +1,11 @@
+---
+description: Rules for Cloudflare/Wrangler changes. Always apply changes to alchemy config files first.
+alwaysApply: false
+---
+
+# Achemy Standards
+
+- This project uses Alchemy to deploy to Cloudflare. Always change deployment config through the alchemy config files.
+- Source of truth: packages/infra/alchemy.run.ts + Alchemy env for D1/R2/KV/bindings/flags/secrets.
+- apps/web/.alchemy/local/wrangler.jsonc is treated as generated for dev / configPath, not where you define production resources.
+- Avoid extra deploy wrangler.toml / wrangler.jsonc under apps/\* unless Alchemy can’t model something and you document an exception.

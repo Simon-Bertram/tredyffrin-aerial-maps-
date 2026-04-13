@@ -12,6 +12,7 @@ This project was created with [Better-T-Stack](https://github.com/AmanVarshney01
 - **Drizzle** - TypeScript-first ORM
 - **SQLite/Turso** - Database engine
 - **Turborepo** - Optimized monorepo build system
+- **EmDash CMS** - Astro-native CMS on the web worker (separate D1 from the API)
 
 ## Getting Started
 
@@ -44,6 +45,13 @@ pnpm run dev
 
 Open [http://localhost:4321](http://localhost:4321) in your browser to see the web application.
 The API is running at [http://localhost:3000](http://localhost:3000).
+
+### EmDash CMS (apps/web)
+
+- Admin UI: [http://localhost:4321/_emdash/admin](http://localhost:4321/_emdash/admin) (passkey auth unless `CF_ACCESS_TEAM_DOMAIN` / `CF_ACCESS_AUDIENCE` are set in `apps/web/.env`; see `apps/web/.env.example`).
+- CMS data lives in a **separate D1** (`emdash-database` in Alchemy) from the Hono/Drizzle database.
+- **Worker Loader** (sandboxed plugins) needs a **paid Cloudflare Workers** plan. See [EmDash README](https://github.com/emdash-cms/emdash/blob/main/README.md).
+- After changing the live schema, refresh types: with dev running, `pnpm --filter web emdash:types` (or commit the hand-maintained [apps/web/emdash-env.d.ts](apps/web/emdash-env.d.ts) when offline).
 
 ## Deployment (Cloudflare via Alchemy)
 

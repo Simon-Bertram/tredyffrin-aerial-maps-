@@ -1,0 +1,33 @@
+---
+description: Always applied to provide project context and status
+globs: ["**/*"]
+alwaysApply: true
+---
+
+# Project Status
+
+**Current sprint:** EmDash CMS integration and Cloudflare (Alchemy) deployment hardening.
+
+**Last milestone:** Core monorepo stack in place — Astro (`apps/web`), Workers/Hono API, shared Drizzle schema (`packages/db`), edge-runtime conventions.
+
+**Next step:** Complete EmDash CMS + R2 wiring, verify Alchemy deploys, and keep blog/content routes aligned with CMS output.
+
+**Two-D1 model (locked in docs + rules):** EmDash migrations and Kysely own the CMS D1 (`emdash-database` → web worker `DB`); Drizzle migrations own only the API D1 (`database` → Hono `DB`). Do not merge those migration paths or duplicate EmDash tables in `packages/db`. For map + CMS, the chosen pattern is Astro-first reads (`getEmDashCollection` / `getEmDashEntry`) plus Drizzle/Hono for non-CMS spatial or API data — see [docs/emdash-cms-integration.md](../../docs/emdash-cms-integration.md) §2 and [emdash.mdc](./emdash.mdc).
+
+**CMS media vs Astro images:** EmDash `mediaProviders` (Cloudflare Images / Stream) are separate from Astro `astro:assets` and `imageService: "cloudflare"` on the Alchemy adapter. R2-only CMS media does not require the Cloudflare Images product; theme images can still be optimized via Astro. See [docs/cms-media-and-astro-images.md](../../docs/cms-media-and-astro-images.md).
+
+**Build / tooling notes (from prior debugging):** `@cloudflare/vite-plugin` resolves Wrangler `main` and requires the file to exist when `main` ends in `.js`/`.mjs`, but Astro only writes `dist/server/entry.mjs` later in the build. The project keeps Wrangler `main` as `@astrojs/cloudflare/entrypoints/server` (see `wrangler.transform` on the Astro resource in `packages/infra/alchemy.run.ts` and `apps/web/.alchemy/local/wrangler.jsonc`). The Hono server build marks `cloudflare:workers` external in `apps/server/tsdown.config.ts` because `packages/env` re-exports it. Import Portable Text via `import { PortableText } from "astro-portabletext"` — not the unexported `components/PortableText.astro` subpath (Vite 7 enforces package `exports`).
+
+**EmDash admin / passkey (from local debugging):** In `apps/web/astro.config.mjs`, any **non-empty** `CF_ACCESS_TEAM_DOMAIN` turns on the Cloudflare Access auth adapter; EmDash then **does not** inject the built-in passkey API routes, so passkey sign-in fails with 404 on `/_emdash/api/auth/passkey/*`. Keep `CF_ACCESS_*` commented in `apps/web/.env` unless you use real Access (see `apps/web/.env.example`). Optional `PUBLIC_PASSKEY_ORIGIN` is passed through as EmDash `passkeyPublicOrigin` when the browser-facing origin must be explicit (tunnel, port forward, or `localhost` vs `127.0.0.1`); only set it when needed. After `pnpm run dev`, use the **`Web ->` URL** Alchemy prints—Astro may bind a different port if `4321` is in use, and opening the wrong origin can look like a broken setup or passkey. If setup metadata is stale (wizard still runs but APIs return setup complete), in **dev only** reset with `POST /_emdash/api/setup/dev-reset` and header `X-EmDash-Request: 1` on the same origin as the admin UI.
+
+# Project context
+
+- **Repository:** `tehs-aerial-images` — pnpm workspaces + Turborepo (`turbo`).
+- **Frontend:** `apps/web` — Astro (islands / server components as applicable).
+- **Backend:** Cloudflare Workers (Hono); use `c.env.DB` for D1; no Node built-ins on the edge — see `edge-runtime.mdc`.
+- **Shared data:** `packages/db` — Drizzle; run `pnpm build` at root when shared types change.
+- **Infra:** `packages/infra` — Alchemy; follow `alchemy-deployment.mdc` before Wrangler-only changes.
+
+**Environment variables:** `packages/infra/alchemy.run.ts` loads `packages/infra/.env`, `apps/web/.env`, and `apps/server/.env` (via `dotenv`). Use `apps/web/.env` for values the Astro app needs locally (`PUBLIC_*`, EmDash-related options as documented). Use `packages/infra/.env` (gitignored) for Alchemy/Cloudflare deploy credentials and deploy-only values. For sensitive Worker bindings, use `alchemy.secret(process.env.VAR)` in `alchemy.run.ts` and supply values from the environment at deploy time; see [Alchemy Secret](https://alchemy.run/concepts/secret/).
+
+When suggesting code or commands, prefer patterns already used in this repo and the other `.cursor/rules/*.mdc` files over generic stack assumptions.
