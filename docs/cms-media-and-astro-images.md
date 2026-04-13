@@ -72,3 +72,4 @@ They are complementary, not mutually exclusive, unless you choose R2-only for co
 
 - [emdash-cms-integration.md](./emdash-cms-integration.md) — full integration, `.dev.vars`, sandbox (`LOADER` / `PluginBridge`).
 - [emdash-cms-setup.md](./emdash-cms-setup.md) — short setup steps.
+- [r2-cms-media-vs-cloudflare-images.md](./r2-cms-media-vs-cloudflare-images.md) — R2 + EmDash image fields vs Cloudflare Images product (aerial / CMS media).
