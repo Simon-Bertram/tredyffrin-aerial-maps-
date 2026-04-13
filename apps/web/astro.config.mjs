@@ -19,6 +19,8 @@ import alchemy from "alchemy/cloudflare/astro";
 import { defineConfig, envField } from "astro/config";
 
 const cfAccessTeamDomain = process.env.CF_ACCESS_TEAM_DOMAIN;
+/** When set, WebAuthn rpId/origin match the browser (see apps/web/.env.example). */
+const publicPasskeyOrigin = process.env.PUBLIC_PASSKEY_ORIGIN?.replace(/\/$/, "");
 const emdashAuth =
   cfAccessTeamDomain !== undefined && cfAccessTeamDomain.length > 0
     ? access({
@@ -28,34 +30,6 @@ const emdashAuth =
         defaultRole: 30,
       })
     : undefined;
-
-// #region agent log
-fetch("http://localhost:7863/ingest/3b9fb545-c701-4112-be3a-7ef1749fe1a4", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-    "X-Debug-Session-Id": "d047fe",
-  },
-  body: JSON.stringify({
-    sessionId: "d047fe",
-    location: "astro.config.mjs:emdashAuth",
-    message: "EmDash Cloudflare Access env at config load",
-    data: {
-      hypothesisId: "H-A",
-      cfAccessTeamDomainSet: Boolean(cfAccessTeamDomain?.length),
-      cfAccessTeamDomainSample: cfAccessTeamDomain
-        ? `${String(cfAccessTeamDomain).slice(0, 24)}…`
-        : null,
-      cfAccessAudiencePreview: process.env.CF_ACCESS_AUDIENCE
-        ? `${String(process.env.CF_ACCESS_AUDIENCE).slice(0, 40)}…`
-        : null,
-      emdashAuthObjectCreated: Boolean(emdashAuth),
-    },
-    timestamp: Date.now(),
-    runId: "pre-fix",
-  }),
-}).catch(() => {});
-// #endregion
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 /** Same file Alchemy's platformProxy validates; @astrojs/cloudflare must read it too or dev SSR omits nodejs_compat. */
@@ -142,6 +116,7 @@ export default defineConfig({
       mcp: true,
       database: d1({ binding: "DB", session: "disabled" }),
       storage: r2({ binding: "MEDIA" }),
+      ...(publicPasskeyOrigin ? { passkeyPublicOrigin: publicPasskeyOrigin } : {}),
       ...(emdashAuth ? { auth: emdashAuth } : {}),
       mediaProviders:
         /** @type {import('emdash/media').MediaProviderDescriptor[]} */ ([

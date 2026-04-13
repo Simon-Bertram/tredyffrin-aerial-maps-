@@ -12,6 +12,8 @@ alwaysApply: true
 
 **Next step:** Complete EmDash CMS + R2 wiring, verify Alchemy deploys, and keep blog/content routes aligned with CMS output.
 
+**Two-D1 model (locked in docs + rules):** EmDash migrations and Kysely own the CMS D1 (`emdash-database` → web worker `DB`); Drizzle migrations own only the API D1 (`database` → Hono `DB`). Do not merge those migration paths or duplicate EmDash tables in `packages/db`. For map + CMS, the chosen pattern is Astro-first reads (`getEmDashCollection` / `getEmDashEntry`) plus Drizzle/Hono for non-CMS spatial or API data — see [docs/emdash-cms-integration.md](../../docs/emdash-cms-integration.md) §2 and [emdash.mdc](./emdash.mdc).
+
 **Build / tooling notes (from prior debugging):** `@cloudflare/vite-plugin` resolves Wrangler `main` and requires the file to exist when `main` ends in `.js`/`.mjs`, but Astro only writes `dist/server/entry.mjs` later in the build. The project keeps Wrangler `main` as `@astrojs/cloudflare/entrypoints/server` (see `wrangler.transform` on the Astro resource in `packages/infra/alchemy.run.ts` and `apps/web/.alchemy/local/wrangler.jsonc`). The Hono server build marks `cloudflare:workers` external in `apps/server/tsdown.config.ts` because `packages/env` re-exports it. Import Portable Text via `import { PortableText } from "astro-portabletext"` — not the unexported `components/PortableText.astro` subpath (Vite 7 enforces package `exports`).
 
 # Project context
