@@ -1,0 +1,8 @@
+- Objective: Resolve map style-switch console errors and clean up debug instrumentation after verification.
+- Scope: `apps/web/src/components/ui/map.tsx`, `apps/web/src/components/ui/use-map-terrain.ts`.
+- Changes: Switched `map.setStyle` to `{ diff: false }` for style URL swaps and gated map readiness with `map.isStyleLoaded()` before enabling style-dependent layers.
+- Changes: Removed all temporary runtime debug logging (`agent log` blocks, debug fetch payloads, and hypothesis tracking data) after confirmed fix.
+- Validation: `ReadLints` reported no errors for both updated files.
+- Validation: Source scan confirmed no remaining debug session instrumentation markers in map UI components.
+- Risks/Blockers: None known; style transitions now depend on native `isStyleLoaded()` readiness.
+- Next actions: Optional quick manual sanity pass on map style switching and terrain toggle behavior in browser.

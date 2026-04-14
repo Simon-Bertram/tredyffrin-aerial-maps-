@@ -238,15 +238,17 @@ const Map = forwardRef<MapRef, MapProps>(function Map(
 
     const styleDataHandler = () => {
       clearStyleTimeout();
-      // Delay to ensure style is fully processed before allowing layer operations
-      // This is a workaround to avoid race conditions with the style loading
-      // else we have to force update every layer on setStyle change
-      styleTimeoutRef.current = setTimeout(() => {
-        setIsStyleLoaded(true);
-        if (projection) {
-          map.setProjection(projection);
-        }
-      }, 100);
+      const mapStyleLoadedNow = map.isStyleLoaded();
+
+      if (!mapStyleLoadedNow) {
+        setIsStyleLoaded(false);
+        return;
+      }
+
+      setIsStyleLoaded(true);
+      if (projection) {
+        map.setProjection(projection);
+      }
     };
     const loadHandler = () => setIsLoaded(true);
 
@@ -315,7 +317,7 @@ const Map = forwardRef<MapRef, MapProps>(function Map(
     currentStyleRef.current = newStyle;
     setIsStyleLoaded(false);
 
-    mapInstance.setStyle(newStyle, { diff: true });
+    mapInstance.setStyle(newStyle, { diff: false });
   }, [mapInstance, resolvedTheme, mapStyles, clearStyleTimeout]);
 
   useMapTerrain({

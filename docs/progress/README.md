@@ -4,6 +4,8 @@ Lightweight project progress notes for substantial changes.
 
 ## Latest session note
 
+- `2026-04-14-map-style-loading-debug-fix.md`
+- Covers the map style-switch stability fix by disabling style diffing for full style URL changes, gating terrain setup on true `map.isStyleLoaded()` readiness, and removing temporary debug instrumentation after verification.
 - `2026-04-14-digital-curator-color-scheme-phase-1.md`
 - Covers Digital Curator Phase 1 rollout: archive palette tokens, surface-layered homepage, no-line header treatment, and map overlay restyling with ghost-border/ambient depth.
 - `2026-04-14-map-terrain-style-controls.md`
