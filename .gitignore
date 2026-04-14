@@ -55,3 +55,4 @@ temp
 
 # Cloudflare
 apps/web/.wrangler/*
+apps/web/.dev.vars
