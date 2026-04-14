@@ -4,6 +4,10 @@ Lightweight project progress notes for substantial changes.
 
 ## Latest session note
 
+- `2026-04-14-map-debug-instrumentation-cleanup-final.md`
+- Covers removing all temporary map debugging instrumentation after confirming style/terrain lifecycle fixes, while preserving the functional rendering improvements.
+- `2026-04-14-map-style-readiness-signal-fix.md`
+- Covers switching map style readiness to `style.load`/`idle` event signals so terrain setup resumes reliably while preserving the non-diff style swap fix.
 - `2026-04-14-map-style-loading-debug-fix.md`
 - Covers the map style-switch stability fix by disabling style diffing for full style URL changes, gating terrain setup on true `map.isStyleLoaded()` readiness, and removing temporary debug instrumentation after verification.
 - `2026-04-14-digital-curator-color-scheme-phase-1.md`

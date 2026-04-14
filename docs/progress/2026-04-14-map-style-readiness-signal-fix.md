@@ -1,0 +1,7 @@
+- Objective: Restore 3D terrain activation while keeping style-switch console warnings resolved.
+- Scope: `apps/web/src/components/ui/map.tsx`.
+- Changes: Replaced timer/manual style readiness with event-based readiness using `style.load` and `idle`, while keeping `styledata` as a transition reset signal.
+- Changes: Kept non-diff style swaps (`setStyle(..., { diff: false })`) to avoid the prior MapLibre style diff warning path.
+- Validation: `ReadLints` reported no issues for the updated map component.
+- Risks/Blockers: None known; readiness now follows MapLibre style lifecycle events instead of timeout heuristics.
+- Next actions: Quick manual browser pass for rapid style switching + terrain mode toggles.

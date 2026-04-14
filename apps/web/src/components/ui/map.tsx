@@ -190,7 +190,6 @@ const Map = forwardRef<MapRef, MapProps>(function Map(
   const [isLoaded, setIsLoaded] = useState(false);
   const [isStyleLoaded, setIsStyleLoaded] = useState(false);
   const currentStyleRef = useRef<MapStyleOption | null>(null);
-  const styleTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const internalUpdateRef = useRef(false);
   const resolvedTheme = useResolvedTheme(themeProp);
 
@@ -209,13 +208,6 @@ const Map = forwardRef<MapRef, MapProps>(function Map(
 
   // Expose the map instance to the parent component
   useImperativeHandle(ref, () => mapInstance as MapLibreGL.Map, [mapInstance]);
-
-  const clearStyleTimeout = useCallback(() => {
-    if (styleTimeoutRef.current) {
-      clearTimeout(styleTimeoutRef.current);
-      styleTimeoutRef.current = null;
-    }
-  }, []);
 
   // Initialize the map
   useEffect(() => {
@@ -237,11 +229,21 @@ const Map = forwardRef<MapRef, MapProps>(function Map(
     });
 
     const styleDataHandler = () => {
-      clearStyleTimeout();
-      const mapStyleLoadedNow = map.isStyleLoaded();
-
-      if (!mapStyleLoadedNow) {
+      if (!map.isStyleLoaded()) {
         setIsStyleLoaded(false);
+      }
+    };
+    const styleLoadHandler = () => {
+      if (!map.isStyleLoaded()) {
+        return;
+      }
+      setIsStyleLoaded(true);
+      if (projection) {
+        map.setProjection(projection);
+      }
+    };
+    const idleHandler = () => {
+      if (!map.isStyleLoaded()) {
         return;
       }
 
@@ -260,13 +262,16 @@ const Map = forwardRef<MapRef, MapProps>(function Map(
 
     map.on("load", loadHandler);
     map.on("styledata", styleDataHandler);
+    map.on("style.load", styleLoadHandler);
+    map.on("idle", idleHandler);
     map.on("move", handleMove);
     setMapInstance(map);
 
     return () => {
-      clearStyleTimeout();
       map.off("load", loadHandler);
       map.off("styledata", styleDataHandler);
+      map.off("style.load", styleLoadHandler);
+      map.off("idle", idleHandler);
       map.off("move", handleMove);
       map.remove();
       setIsLoaded(false);
@@ -313,12 +318,11 @@ const Map = forwardRef<MapRef, MapProps>(function Map(
 
     if (currentStyleRef.current === newStyle) return;
 
-    clearStyleTimeout();
     currentStyleRef.current = newStyle;
     setIsStyleLoaded(false);
 
     mapInstance.setStyle(newStyle, { diff: false });
-  }, [mapInstance, resolvedTheme, mapStyles, clearStyleTimeout]);
+  }, [mapInstance, resolvedTheme, mapStyles]);
 
   useMapTerrain({
     map: mapInstance,

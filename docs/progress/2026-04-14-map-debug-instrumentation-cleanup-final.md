@@ -1,0 +1,7 @@
+- Objective: Remove all temporary runtime debug instrumentation after map style/terrain fixes were confirmed.
+- Scope: `apps/web/src/components/ui/map.tsx`, `apps/web/src/components/ui/use-map-terrain.ts`.
+- Changes: Deleted all debug-only `fetch` logging blocks and hypothesis markers while preserving functional fixes (event-based style readiness, non-diff style swaps, and separate hillshade DEM source).
+- Validation: `ReadLints` reported no issues for both updated files.
+- Validation: Source scan found no remaining debug session markers (`X-Debug-Session-Id`, `sessionId`, `hypothesisId`, `runId`, `agent log` regions).
+- Risks/Blockers: None known; cleanup is limited to instrumentation code removal.
+- Next actions: Optional manual sanity check of style switching + terrain to confirm behavior remains stable without debug hooks.
