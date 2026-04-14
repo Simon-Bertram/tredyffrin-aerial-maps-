@@ -1,0 +1,8 @@
+- Objective: Implement photo-enabled map markers with hover preview and location detail pages, using a CMS-ready data shape.
+- Scope: `apps/web/src/lib/locations.ts`, `apps/web/src/components/aerial-map.tsx`, `apps/web/src/components/ui/map.tsx`, `apps/web/src/components/smoothui/phototab/index.tsx`, `apps/web/src/pages/locations/[slug].astro`, `apps/web/src/pages/index.astro`.
+- Changes: Added typed location seed data with coordinates, short/full descriptions, and photo metadata (`photographer`, `photoDate`, `direction`, `comments`).
+- Changes: Installed SmoothUI `phototab` (`pnpm dlx shadcn add @smoothui/phototab`) and integrated it into marker hover previews with a single-photo fallback to static image rendering.
+- Changes: Added marker click navigation to `/locations/[slug]` and built a detail route rendering full description plus all photo metadata.
+- Changes: Updated marker tooltip behavior to remain open while hovering tooltip content, enabling interaction with embedded photo tabs.
+- Validation: Ran `pnpm --filter web lint` (fails because script is not defined), ran `pnpm --filter web build` (passes), checked edited files with `ReadLints` (no errors).
+- Risks/Blockers: Astro warns that `getStaticPaths()` is ignored in current server output mode; dynamic route still works, but static-path optimization would require `prerender` plus resolving prerender-time fetch issues elsewhere in the app.

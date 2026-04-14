@@ -1,11 +1,13 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import { AerialMap } from "@/components/aerial-map";
 ---
 
 <Layout title="tehs-aerial-images">
   <main>
-    <div class="container mx-auto max-w-3xl px-4 py-2">
-      <h1 class="text-4xl font-bold">Welcome to tehs-aerial-images</h1>
+    <div class="container mx-auto max-w-6xl px-4 py-2">
+      <h1 class="text-4xl font-bold mb-16">Welcome to tehs-aerial-images</h1>
+      <AerialMap client:load />
     </div>
   </main>
 </Layout>

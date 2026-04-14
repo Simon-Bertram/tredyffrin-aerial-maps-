@@ -1,0 +1,73 @@
+---
+import Layout from '../../layouts/Layout.astro'
+import { getLocationBySlug, locations } from '@/lib/locations'
+
+export function getStaticPaths() {
+  return locations.map((location) => ({
+    params: { slug: location.slug },
+  }))
+}
+
+const { slug } = Astro.params
+const location = slug ? getLocationBySlug(slug) : undefined
+
+if (!location) {
+  throw new Error(`Location not found for slug: ${slug}`)
+}
+---
+
+<Layout title={`${location.name} | tehs-aerial-images`}>
+  <main class="container mx-auto max-w-6xl space-y-6 px-4 py-6">
+    <a
+      href="/"
+      class="inline-flex items-center rounded border border-border px-3 py-1 text-sm text-muted-foreground transition hover:bg-accent hover:text-accent-foreground"
+    >
+      Back to map
+    </a>
+
+    <header class="space-y-2">
+      <h1 class="text-3xl font-bold">{location.name}</h1>
+      <p class="max-w-4xl text-sm text-muted-foreground">
+        {location.fullDescription}
+      </p>
+    </header>
+
+    <section class="grid gap-4 md:grid-cols-2">
+      {location.photos.map((photo) => (
+        <article class="overflow-hidden rounded-lg border bg-card">
+          <img
+            src={photo.src}
+            alt={photo.alt}
+            loading="lazy"
+            class="h-56 w-full object-cover"
+          />
+          <div class="space-y-2 p-4 text-sm">
+            {photo.caption && (
+              <p class="font-medium text-card-foreground">{photo.caption}</p>
+            )}
+            <dl class="grid gap-1 text-muted-foreground">
+              <div class="flex items-center gap-2">
+                <dt class="font-medium text-card-foreground">Photographer:</dt>
+                <dd>{photo.photographer}</dd>
+              </div>
+              <div class="flex items-center gap-2">
+                <dt class="font-medium text-card-foreground">Date:</dt>
+                <dd>{photo.photoDate}</dd>
+              </div>
+              <div class="flex items-center gap-2">
+                <dt class="font-medium text-card-foreground">Direction:</dt>
+                <dd>{photo.direction}</dd>
+              </div>
+              {photo.comments && (
+                <div class="flex items-start gap-2">
+                  <dt class="font-medium text-card-foreground">Comments:</dt>
+                  <dd>{photo.comments}</dd>
+                </div>
+              )}
+            </dl>
+          </div>
+        </article>
+      ))}
+    </section>
+  </main>
+</Layout>

@@ -1,0 +1,44 @@
+---
+description: Lightweight progress note protocol for agent work.
+globs: ["*"]
+alwaysApply: true
+---
+
+# Progress Notes Rule
+
+## Location
+
+- Save progress notes in `docs/progress/`.
+- Keep one file per session using `YYYY-MM-DD-topic.md`.
+
+## When to add notes
+
+- Add a brief note after substantial code or config changes.
+- Add a note any time the user explicitly requests one.
+- Skip notes for trivial reads, quick answers, or no-op changes.
+
+## What to include
+
+Keep entries concise and outcome-focused:
+
+- Objective
+- Scope (key files)
+- Changes
+- Validation (only commands actually run)
+- Risks or blockers
+- Next actions
+
+## Current project context
+
+- Most recent note: `docs/progress/2026-04-14-photo-enabled-markers.md`.
+- Recent work includes:
+  - map marker hover previews with multi-photo support (`phototab`)
+  - single-photo fallback rendering without tabs
+  - dynamic location detail page route and per-photo metadata display
+  - CMS-ready location records with `photographer`, `photoDate`, `direction`, `comments?`
+- Validation entries should record command outcomes exactly (for example, missing script vs passing build), not inferred success.
+
+## Style
+
+- Prefer 3-8 bullets total.
+- Capture decisions and outcomes, not step-by-step narration.
