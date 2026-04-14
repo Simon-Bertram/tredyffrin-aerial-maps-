@@ -18,14 +18,18 @@ import {
 import { createPortal } from "react-dom";
 import { X, Minus, Plus, Locate, Maximize, Loader2 } from "lucide-react";
 
+import type {
+  MapStyleOption,
+  MapTerrainConfig,
+  Theme,
+} from "@/components/ui/map-types";
+import { useMapTerrain } from "@/components/ui/use-map-terrain";
 import { cn } from "@/lib/utils";
 
 const defaultStyles = {
   dark: "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
   light: "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
 };
-
-type Theme = "light" | "dark";
 
 // Check document class for theme (works with next-themes, etc.)
 function getDocumentTheme(): Theme | null {
@@ -109,8 +113,6 @@ type MapViewport = {
   pitch: number;
 };
 
-type MapStyleOption = string | MapLibreGL.StyleSpecification;
-
 type MapRef = MapLibreGL.Map;
 
 type MapProps = {
@@ -142,6 +144,8 @@ type MapProps = {
   onViewportChange?: (viewport: MapViewport) => void;
   /** Show a loading indicator on the map */
   loading?: boolean;
+  /** Optional 3D terrain configuration */
+  terrain3d?: MapTerrainConfig;
 } & Omit<MapLibreGL.MapOptions, "container" | "style">;
 
 function DefaultLoader() {
@@ -176,6 +180,7 @@ const Map = forwardRef<MapRef, MapProps>(function Map(
     viewport,
     onViewportChange,
     loading = false,
+    terrain3d,
     ...props
   },
   ref,
@@ -312,6 +317,12 @@ const Map = forwardRef<MapRef, MapProps>(function Map(
 
     mapInstance.setStyle(newStyle, { diff: true });
   }, [mapInstance, resolvedTheme, mapStyles, clearStyleTimeout]);
+
+  useMapTerrain({
+    map: mapInstance,
+    isStyleLoaded: isLoaded && isStyleLoaded,
+    terrain3d,
+  });
 
   const contextValue = useMemo(
     () => ({

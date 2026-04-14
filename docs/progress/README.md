@@ -4,6 +4,8 @@ Lightweight project progress notes for substantial changes.
 
 ## Latest session note
 
+- `2026-04-14-map-terrain-style-controls.md`
+- Covers 3D terrain support, `useMap`-based style controls, SOLID-oriented map refactors, and the Firefox terrain 404 fix by replacing the DEM source.
 - `2026-04-14-photo-enabled-markers.md`
 - Covers map marker hover previews, SmoothUI `phototab` integration, location detail routing, and CMS-ready photo metadata fields.
 
@@ -38,3 +40,4 @@ Use concise sections:
 
 - Photo-enabled location markers with hover preview and detail pages
 - CMS-ready location schema (`photographer`, `photoDate`, `direction`, `comments`)
+- Terrain DEM source migration to resolve browser console 404s

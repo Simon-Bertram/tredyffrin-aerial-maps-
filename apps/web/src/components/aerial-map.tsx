@@ -1,44 +1,62 @@
-import { Camera, MapPin } from 'lucide-react'
-import { useState } from 'react'
+import { Camera } from "lucide-react";
+import { useState } from "react";
 
-import Phototab from '@/components/smoothui/phototab'
+import Phototab from "@/components/smoothui/phototab";
 import {
   Map,
   MapControls,
   MapMarker,
   MarkerContent,
   MarkerTooltip,
-} from '@/components/ui/map'
-import { locations } from '@/lib/locations'
+} from "@/components/ui/map";
+import { MapStyleControls } from "@/components/ui/map-style-controls";
+import {
+  MAP_STYLE_OPTIONS,
+  getMapStylesForVisualStyle,
+  getTerrainForVisualStyle,
+} from "@/components/ui/map-style-config";
+import type { MapVisualStyleId } from "@/components/ui/map-types";
+import { locations } from "@/lib/locations";
 
 /** Tredyffrin area — MapLibre uses [longitude, latitude] (GeoJSON order). */
-const TREDDYFFRIN_CENTER: [number, number] = [-75.4368, 40.0902]
+const TREDDYFFRIN_CENTER: [number, number] = [-75.4368, 40.0902];
 
 export function AerialMap() {
-  const [activePhotoTabs, setActivePhotoTabs] = useState<Record<string, string>>(
-    {},
-  )
+  const [activePhotoTabs, setActivePhotoTabs] = useState<
+    Record<string, string>
+  >({});
+  const [selectedStyle, setSelectedStyle] =
+    useState<MapVisualStyleId>("terrain");
+  const mapStyles = getMapStylesForVisualStyle(selectedStyle);
+  const terrain3d = getTerrainForVisualStyle(selectedStyle);
 
   return (
     <Map
       className="h-[800px] w-full rounded-lg border"
       center={TREDDYFFRIN_CENTER}
       zoom={12}
+      styles={mapStyles}
+      terrain3d={terrain3d}
     >
+      <MapStyleControls
+        options={MAP_STYLE_OPTIONS}
+        selectedStyle={selectedStyle}
+        onStyleChange={setSelectedStyle}
+      />
       <MapControls />
       {locations.map((location) => {
-        const detailPath = `/locations/${location.slug}`
-        const firstPhoto = location.photos[0]
-        const multiplePhotos = location.photos.length > 1
-        const activeTab = activePhotoTabs[location.slug] ?? '1'
-        const activePhotoIndex = Number(activeTab) - 1
+        const detailPath = `/locations/${location.slug}`;
+        const firstPhoto = location.photos[0];
+        const multiplePhotos = location.photos.length > 1;
+        const activeTab = activePhotoTabs[location.slug] ?? "1";
+        const activePhotoIndex = Number(activeTab) - 1;
         const activePhoto =
-          location.photos[activePhotoIndex] ?? location.photos[0]
+          location.photos[activePhotoIndex] ?? location.photos[0];
         const phototabItems = location.photos.map((photo, index) => ({
           name: `${index + 1}`,
           icon: <span className="block size-1.5 rounded-full bg-current" />,
           image: photo.src,
-        }))
+        }));
 
         return (
           <MapMarker
@@ -46,7 +64,7 @@ export function AerialMap() {
             longitude={location.coordinates.longitude}
             latitude={location.coordinates.latitude}
             onClick={() => {
-              window.location.href = detailPath
+              window.location.href = detailPath;
             }}
           >
             <MarkerContent>
@@ -57,7 +75,7 @@ export function AerialMap() {
               >
                 <span className="absolute inset-0 animate-ping rounded-full bg-primary/35" />
                 <span className="relative flex size-8 items-center justify-center rounded-full border border-white/30 bg-primary text-primary-foreground shadow-lg transition-transform group-hover:scale-105">
-                  <MapPin className="size-4" />
+                  <Camera className="size-4" />
                 </span>
               </button>
             </MarkerContent>
@@ -73,7 +91,7 @@ export function AerialMap() {
                         setActivePhotoTabs((prev) => ({
                           ...prev,
                           [location.slug]: nextTab,
-                        }))
+                        }));
                       }}
                       height={160}
                       className="h-40 w-full rounded-none"
@@ -90,7 +108,7 @@ export function AerialMap() {
                   )}
                   <div className="absolute top-2 left-2 rounded bg-black/70 px-2 py-1 text-[10px] text-white">
                     {location.photos.length} photo
-                    {location.photos.length > 1 ? 's' : ''}
+                    {location.photos.length > 1 ? "s" : ""}
                   </div>
                 </div>
 
@@ -119,8 +137,8 @@ export function AerialMap() {
               </article>
             </MarkerTooltip>
           </MapMarker>
-        )
+        );
       })}
     </Map>
-  )
+  );
 }

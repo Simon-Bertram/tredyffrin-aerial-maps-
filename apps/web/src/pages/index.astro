@@ -4,10 +4,15 @@ import { AerialMap } from "@/components/aerial-map";
 ---
 
 <Layout title="tehs-aerial-images">
-  <main>
+  <main class="min-h-screen flex items-center justify-center">
     <div class="container mx-auto max-w-6xl px-4 py-2">
-      <h1 class="text-4xl font-bold mb-16">Welcome to tehs-aerial-images</h1>
+      <h1 class="text-4xl font-bold mb-16 text-center">
+        Welcome to The Tredyffrin Aerial Images Collection
+      </h1>
       <AerialMap client:load />
+      <p class="text-center text-sm text-muted-foreground mt-4">
+        This is a collection of aerial images of the Tredyffrin area.
+      </p>
     </div>
   </main>
 </Layout>
