@@ -9,10 +9,10 @@ import type { MapStyleControlProps } from "@/components/ui/map-types";
 import { useMap } from "@/components/ui/map";
 
 const positionClasses = {
-  "top-left": "top-2 left-2",
-  "top-right": "top-2 right-2",
-  "bottom-left": "bottom-2 left-2",
-  "bottom-right": "bottom-10 right-2",
+  "top-left": "top-3 left-3",
+  "top-right": "top-3 right-3",
+  "bottom-left": "bottom-3 left-3",
+  "bottom-right": "bottom-12 right-3",
 };
 
 function MapStyleControls({
@@ -33,7 +33,7 @@ function MapStyleControls({
   return (
     <div
       className={cn(
-        "bg-background/90 border-border absolute z-20 flex items-center gap-1 rounded-md border p-1 shadow-sm backdrop-blur-xs",
+        "bg-surface/85 absolute z-20 flex items-center gap-1 p-1.5 backdrop-blur-xl",
         positionClasses[position],
         className,
       )}
@@ -46,10 +46,10 @@ function MapStyleControls({
             type="button"
             onClick={() => onStyleChange(option.id)}
             className={cn(
-              "rounded px-2 py-1 text-xs font-medium transition-colors",
+              "px-2.5 py-1 text-xs font-semibold tracking-[0.08em] uppercase transition-colors",
               isActive
                 ? "bg-primary text-primary-foreground"
-                : "hover:bg-accent text-muted-foreground hover:text-foreground",
+                : "text-muted-foreground hover:bg-surface-container hover:text-foreground",
             )}
             aria-pressed={isActive}
           >
@@ -60,7 +60,7 @@ function MapStyleControls({
       <button
         type="button"
         onClick={handleResetView}
-        className="hover:bg-accent rounded p-1 text-muted-foreground transition-colors hover:text-foreground"
+        className="text-muted-foreground hover:bg-surface-container p-1.5 transition-colors hover:text-foreground"
         aria-label="Reset map view"
       >
         <RotateCcw className="size-3.5" />

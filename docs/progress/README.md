@@ -4,10 +4,14 @@ Lightweight project progress notes for substantial changes.
 
 ## Latest session note
 
+- `2026-04-14-digital-curator-color-scheme-phase-1.md`
+- Covers Digital Curator Phase 1 rollout: archive palette tokens, surface-layered homepage, no-line header treatment, and map overlay restyling with ghost-border/ambient depth.
 - `2026-04-14-map-terrain-style-controls.md`
 - Covers 3D terrain support, `useMap`-based style controls, SOLID-oriented map refactors, and the Firefox terrain 404 fix by replacing the DEM source.
 - `2026-04-14-photo-enabled-markers.md`
 - Covers map marker hover previews, SmoothUI `phototab` integration, location detail routing, and CMS-ready photo metadata fields.
+- `2026-04-14-aerial-map-component-extraction.md`
+- Covers extracting map controls and marker rendering into dedicated components while preserving existing map behavior.
 
 ## When to add a note
 
@@ -41,3 +45,4 @@ Use concise sections:
 - Photo-enabled location markers with hover preview and detail pages
 - CMS-ready location schema (`photographer`, `photoDate`, `direction`, `comments`)
 - Terrain DEM source migration to resolve browser console 404s
+- Digital Curator color system rollout (palette tokens, layered surfaces, sharp-corner map UI)

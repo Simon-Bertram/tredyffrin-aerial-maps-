@@ -6,11 +6,11 @@ interface Props {
   title?: string;
 }
 
-const { title = "tehs-aerial-images" } = Astro.props;
+const { title = "The Tredyffrin Aerial Images Collection" } = Astro.props;
 ---
 
 <!doctype html>
-<html lang="en" class="dark">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -18,7 +18,7 @@ const { title = "tehs-aerial-images" } = Astro.props;
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
   </head>
-  <body class="min-h-screen bg-neutral-950 text-white">
+  <body class="min-h-screen bg-surface text-foreground antialiased">
     <Header />
     <slot />
   </body>

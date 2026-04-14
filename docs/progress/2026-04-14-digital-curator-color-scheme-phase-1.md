@@ -1,0 +1,7 @@
+- Objective: apply the Digital Curator palette/surface system to homepage shell, header, and map overlays while preserving dark mode.
+- Scope: `apps/web/src/styles/global.css`, `apps/web/src/layouts/Layout.astro`, `apps/web/src/components/Header.astro`, `apps/web/src/pages/index.astro`, `apps/web/src/components/aerial-map.tsx`, `apps/web/src/components/ui/map-style-controls.tsx`.
+- Changes: replaced neutral theme tokens with archive-inspired `surface`/`primary`/`secondary` tiers, set sharp-corner baseline (`--radius: 0`), added heading serif defaults, and removed hardcoded dark shell classes in favor of token-driven body styling.
+- Changes: reworked homepage into asymmetric layered surfaces, updated header navigation to palette-based label styling without divider lines, and restyled map frame/tooltips/controls to ghost-border + ambient depth treatment.
+- Validation: `ReadLints` on all edited files returned `No linter errors found.`
+- Risks/Blockers: visual polish (exact tonal contrast and typography rhythm) may still need browser-level review against the design reference.
+- Next actions: run manual UI pass in light/dark for map interactions and spacing balance, then iterate on fine-grain typography and spacing tokens if needed.

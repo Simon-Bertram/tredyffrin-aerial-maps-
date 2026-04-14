@@ -30,14 +30,17 @@ Keep entries concise and outcome-focused:
 
 ## Current project context
 
-- Most recent note: `docs/progress/2026-04-14-map-terrain-style-controls.md`.
+- Most recent note: `docs/progress/2026-04-14-digital-curator-color-scheme-phase-1.md`.
 - Recent work includes:
+ - Digital Curator Phase 1 visual system rollout on homepage/layout/map overlays
+ - archive palette token migration with surface-container tiers and ghost-border defaults
+ - no-line sectioning and sharp-corner styling direction across header/map controls
  - map terrain style controls and 3D terrain integration
  - Firefox console 404 fix by migrating DEM tiles to AWS Terrarium source
-  - map marker hover previews with multi-photo support (`phototab`)
-  - single-photo fallback rendering without tabs
-  - dynamic location detail page route and per-photo metadata display
-  - CMS-ready location records with `photographer`, `photoDate`, `direction`, `comments?`
+ - map marker hover previews with multi-photo support (`phototab`)
+ - single-photo fallback rendering without tabs
+ - dynamic location detail page route and per-photo metadata display
+ - CMS-ready location records with `photographer`, `photoDate`, `direction`, `comments?`
 - Validation entries should record command outcomes exactly (for example, missing script vs passing build), not inferred success.
 
 ## Style

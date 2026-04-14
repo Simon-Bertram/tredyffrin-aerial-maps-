@@ -3,16 +3,22 @@ import Layout from "../layouts/Layout.astro";
 import { AerialMap } from "@/components/aerial-map";
 ---
 
-<Layout title="tehs-aerial-images">
-  <main class="min-h-screen flex items-center justify-center">
-    <div class="container mx-auto max-w-6xl px-4 py-2">
-      <h1 class="text-4xl font-bold mb-16 text-center">
-        Welcome to The Tredyffrin Aerial Images Collection
-      </h1>
-      <AerialMap client:load />
-      <p class="text-center text-sm text-muted-foreground mt-4">
-        This is a collection of aerial images of the Tredyffrin area.
-      </p>
+<Layout title="tredyffrin-aerial-images">
+  <main class="min-h-screen bg-surface py-10">
+    <div class="container mx-auto px-4 md:px-8">
+      <section class="bg-surface-container-low p-6 md:p-10">
+        <p class="text-secondary mb-4 text-xs tracking-widest uppercase">
+          Digital Archive
+        </p>
+        <h1 class="text-primary mb-6 text-4xl md:text-5xl">
+          Welcome to The Tredyffrin Aerial Images Collection
+        </h1>
+        <p class="text-muted-foreground mb-8 max-w-2xl text-sm md:text-base">
+          Explore historical aerial photography curated as a living regional
+          archive with rich map detail and contextual metadata.
+        </p>
+        <AerialMap client:load />
+      </section>
     </div>
   </main>
 </Layout>
