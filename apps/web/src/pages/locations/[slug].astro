@@ -1,18 +1,18 @@
 ---
-import Layout from '../../layouts/Layout.astro'
-import { getLocationBySlug, locations } from '@/lib/locations'
+import Layout from "../../layouts/Layout.astro";
+import { getLocationBySlug, locations } from "@/lib/locations";
 
 export function getStaticPaths() {
   return locations.map((location) => ({
     params: { slug: location.slug },
-  }))
+  }));
 }
 
-const { slug } = Astro.params
-const location = slug ? getLocationBySlug(slug) : undefined
+const { slug } = Astro.params;
+const location = slug ? getLocationBySlug(slug) : undefined;
 
 if (!location) {
-  throw new Error(`Location not found for slug: ${slug}`)
+  throw new Error(`Location not found for slug: ${slug}`);
 }
 ---
 
@@ -33,41 +33,45 @@ if (!location) {
     </header>
 
     <section class="grid gap-4 md:grid-cols-2">
-      {location.photos.map((photo) => (
-        <article class="overflow-hidden rounded-lg border bg-card">
-          <img
-            src={photo.src}
-            alt={photo.alt}
-            loading="lazy"
-            class="h-56 w-full object-cover"
-          />
-          <div class="space-y-2 p-4 text-sm">
-            {photo.caption && (
-              <p class="font-medium text-card-foreground">{photo.caption}</p>
-            )}
-            <dl class="grid gap-1 text-muted-foreground">
-              <div class="flex items-center gap-2">
-                <dt class="font-medium text-card-foreground">Photographer:</dt>
-                <dd>{photo.photographer}</dd>
-              </div>
-              <div class="flex items-center gap-2">
-                <dt class="font-medium text-card-foreground">Date:</dt>
-                <dd>{photo.photoDate}</dd>
-              </div>
-              <div class="flex items-center gap-2">
-                <dt class="font-medium text-card-foreground">Direction:</dt>
-                <dd>{photo.direction}</dd>
-              </div>
-              {photo.comments && (
-                <div class="flex items-start gap-2">
-                  <dt class="font-medium text-card-foreground">Comments:</dt>
-                  <dd>{photo.comments}</dd>
-                </div>
+      {
+        location.photos.map((photo) => (
+          <article class="overflow-hidden rounded-lg border bg-card">
+            <img
+              src={photo.src}
+              alt={photo.alt}
+              loading="lazy"
+              class="h-56 w-full object-cover"
+            />
+            <div class="space-y-2 p-4 text-sm">
+              {photo.caption && (
+                <p class="font-medium text-card-foreground">{photo.caption}</p>
               )}
-            </dl>
-          </div>
-        </article>
-      ))}
+              <dl class="grid gap-1 text-muted-foreground">
+                <div class="flex items-center gap-2">
+                  <dt class="font-medium text-card-foreground">
+                    Photographer:
+                  </dt>
+                  <dd>{photo.photographer}</dd>
+                </div>
+                <div class="flex items-center gap-2">
+                  <dt class="font-medium text-card-foreground">Date:</dt>
+                  <dd>{photo.photoDate}</dd>
+                </div>
+                <div class="flex items-center gap-2">
+                  <dt class="font-medium text-card-foreground">Direction:</dt>
+                  <dd>{photo.direction}</dd>
+                </div>
+                {photo.comments && (
+                  <div class="flex items-start gap-2">
+                    <dt class="font-medium text-card-foreground">Comments:</dt>
+                    <dd>{photo.comments}</dd>
+                  </div>
+                )}
+              </dl>
+            </div>
+          </article>
+        ))
+      }
     </section>
   </main>
 </Layout>

@@ -1,0 +1,6 @@
+- Objective: Debug the `web` build failure during Astro prerender and the earlier `cloudflare:workers` server build warning.
+- Scope: `apps/server/tsdown.config.ts`, `package.json`, `apps/web/package.json`, `.nvmrc`.
+- Changes: Marked `cloudflare:workers` as external for the server bundle; added Node engine requirements and `.nvmrc` for Astro 6 compatibility.
+- Validation: Confirmed `server` build no longer shows the unresolved `cloudflare:workers` warning in the user's build log. Confirmed local runtime is `Node v20.18.2`, and `apps/web` build exits immediately with Astro's own unsupported-Node error requiring `>=22.12.0`.
+- Risks or blockers: Full verification of the `web` build requires rerunning under Node `22.12.0` or newer.
+- Next actions: Switch the shell/editor environment to Node `22.12.0+`, rerun `pnpm run build`, and verify the prerender step completes.

@@ -1,5 +1,5 @@
 {
-  "name": "cornwall-ponds-dev",
+  "name": "tredyffrin-aerial-photos-dev",
   "build": { "dockerfile": "Dockerfile", "context": "..", "target": "dev" },
   "remoteUser": "node",
   "features": {

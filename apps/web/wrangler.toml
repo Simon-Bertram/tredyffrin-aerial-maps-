@@ -4,3 +4,4 @@
 # See docs/troubleshooting-local-cloudflare-dev.md
 name = "web"
 compatibility_date = "2026-04-12"
+compatibility_flags = ["nodejs_compat"]
