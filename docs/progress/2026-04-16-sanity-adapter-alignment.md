@@ -1,0 +1,7 @@
+- Objective: Align the Sanity location parser/mapping layer with the real Studio field shapes while preserving the app-facing `LocationRecord` contract.
+- Scope: `apps/web/src/lib/sanity-locations.ts`
+- Changes: Added raw-input schemas that accept either a flat slug or `slug.current`, normalize Sanity geopoints into `{ latitude, longitude }`, accept either projected `src` URLs or nested image asset URLs from `photo.asset.url`, and convert numeric `photoDate` years into strings before mapping to app records.
+- Validation: `ReadLints` on `apps/web/src/lib/sanity-locations.ts` reported no linter errors.
+- Validation: `pnpm --filter web exec tsc --noEmit` still fails under Node `v20.18.2` because the app requires `>=22.12.0`, and it also reports an existing unrelated error in `src/components/ui/use-map-terrain.ts`.
+- Risks or blockers: The adapter is ready for Sanity-backed fetches, but full app type validation remains partially blocked by the existing terrain typing issue and local Node version mismatch.
+- Next actions: Wire GROQ queries into this adapter and switch the public list/detail loaders to consume the normalized Sanity records.

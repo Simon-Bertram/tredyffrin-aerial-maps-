@@ -10,9 +10,51 @@ const optionalTextSchema = z
 
 const requiredTextSchema = z.string().trim().min(1)
 
-const sanityCoordinatesSchema = z.object({
-	lat: z.number().finite(),
-	lng: z.number().finite(),
+const numericYearSchema = z
+	.number()
+	.int()
+	.safe()
+	.transform((value) => String(value))
+
+const sanitySlugSchema = z.union([
+	requiredTextSchema,
+	z.object({
+		current: requiredTextSchema,
+	}),
+])
+
+const sanityCoordinatesSchema = z
+	.object({
+		lat: z.number().finite(),
+		lng: z.number().finite(),
+	})
+	.transform((value) => ({
+		latitude: value.lat,
+		longitude: value.lng,
+	}))
+
+const sanityImageAssetSchema = z.object({
+	asset: z.object({
+		url: z.string().url(),
+	}),
+})
+
+const sanityPhotoSrcSchema = z.union([
+	z.string().url(),
+	sanityImageAssetSchema.transform((value) => value.asset.url),
+])
+
+const sanityPhotoInputSchema = z.object({
+	_key: optionalTextSchema,
+	title: optionalTextSchema,
+	src: sanityPhotoSrcSchema.optional(),
+	photo: sanityPhotoSrcSchema.optional(),
+	alt: optionalTextSchema,
+	caption: optionalTextSchema,
+	photographer: optionalTextSchema,
+	photoDate: z.union([optionalTextSchema, numericYearSchema]).optional(),
+	direction: optionalTextSchema,
+	comments: optionalTextSchema,
 })
 
 const sanityPhotoSchema = z.object({
@@ -27,11 +69,24 @@ const sanityPhotoSchema = z.object({
 	comments: optionalTextSchema,
 })
 
+const sanityLocationInputSchema = z.object({
+	_id: requiredTextSchema,
+	slug: sanitySlugSchema,
+	name: requiredTextSchema,
+	coordinates: sanityCoordinatesSchema,
+	shortDescription: requiredTextSchema,
+	fullDescription: requiredTextSchema,
+	photos: z.array(sanityPhotoInputSchema),
+})
+
 const sanityLocationSchema = z.object({
 	_id: requiredTextSchema,
 	slug: requiredTextSchema,
 	name: requiredTextSchema,
-	coordinates: sanityCoordinatesSchema,
+	coordinates: z.object({
+		latitude: z.number().finite(),
+		longitude: z.number().finite(),
+	}),
 	shortDescription: requiredTextSchema,
 	fullDescription: requiredTextSchema,
 	photos: z.array(sanityPhotoSchema),
@@ -59,6 +114,28 @@ export type SanityLocationListItem = z.output<
 
 function normalizeOptionalText(value: string | undefined) {
 	return value && value.length > 0 ? value : undefined
+}
+
+function normalizeSanityPhoto(
+	photo: z.output<typeof sanityPhotoInputSchema>,
+): SanityLocationPhoto {
+	return sanityPhotoSchema.parse({
+		...photo,
+		src: photo.src ?? photo.photo,
+	})
+}
+
+function normalizeSanityLocation(
+	location: z.output<typeof sanityLocationInputSchema>,
+): SanityLocation {
+	return sanityLocationSchema.parse({
+		...location,
+		slug:
+			typeof location.slug === 'string'
+				? location.slug
+				: location.slug.current,
+		photos: location.photos.map(normalizeSanityPhoto),
+	})
 }
 
 export function mapSanityPhotoToLocationPhoto(
@@ -89,10 +166,7 @@ export function mapSanityLocationToLocationRecord(
 	return {
 		slug: location.slug,
 		name: location.name,
-		coordinates: {
-			longitude: location.coordinates.lng,
-			latitude: location.coordinates.lat,
-		},
+		coordinates: location.coordinates,
 		shortDescription: location.shortDescription,
 		fullDescription: location.fullDescription,
 		photos: location.photos.map((photo, index) =>
@@ -102,17 +176,19 @@ export function mapSanityLocationToLocationRecord(
 }
 
 export function parseSanityLocation(input: unknown): SanityLocation {
-	return sanityLocationDetailSchema.parse(input)
+	return normalizeSanityLocation(sanityLocationInputSchema.parse(input))
 }
 
 export function parseSanityLocations(input: unknown): SanityLocation[] {
-	return sanityLocationDetailsSchema.parse(input)
+	return z.array(sanityLocationInputSchema).parse(input).map(normalizeSanityLocation)
 }
 
 export function parseSanityLocationList(
 	input: unknown,
 ): SanityLocationListItem[] {
-	return sanityLocationsListSchema.parse(input)
+	return parseSanityLocations(input).map((location) =>
+		sanityLocationListItemSchema.parse(location),
+	)
 }
 
 export function parseLocationRecordFromSanity(input: unknown): LocationRecord {
