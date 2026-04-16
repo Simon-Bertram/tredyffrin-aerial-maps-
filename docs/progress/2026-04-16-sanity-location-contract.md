@@ -1,0 +1,8 @@
+- Objective: Define the Sanity location/photo mapping contract that preserves the current `LocationRecord` and `LocationPhoto` app-facing models.
+- Scope: `apps/web/src/lib/sanity-locations.ts`
+- Changes: Added Zod schemas for projected Sanity location and photo payloads, list/detail parsing helpers, and mapping helpers that normalize optional CMS fields while converting Sanity coordinates into the existing app model shape.
+- Validation: `ReadLints` on `apps/web/src/lib/sanity-locations.ts` reported no linter errors.
+- Validation: `pnpm --filter web build` failed because the workspace is on Node `v20.18.2` and Astro requires `>=22.12.0`.
+- Validation: `pnpm --filter web exec tsc --noEmit` failed on an existing unrelated type error in `src/components/ui/use-map-terrain.ts`.
+- Risks or blockers: The new contract is ready to consume, but end-to-end app validation is partially blocked until the local Node version is upgraded and the existing terrain typing issue is resolved.
+- Next actions: Wire Sanity queries to return this projected shape, then swap page/map data loading onto the new parser and mapper.
