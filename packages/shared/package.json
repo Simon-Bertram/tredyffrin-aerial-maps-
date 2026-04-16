@@ -1,0 +1,12 @@
+{
+	"name": "@tehs-aerial-images/shared",
+	"type": "module",
+	"exports": {
+		"./testing/*": {
+			"default": "./testing/*.ts"
+		}
+	},
+	"dependencies": {
+		"zod": "catalog:"
+	}
+}

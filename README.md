@@ -21,6 +21,11 @@ First, install the dependencies:
 pnpm install
 ```
 
+## Testing
+
+Testing framework usage is documented in
+[`docs/testing-framework-guide.md`](docs/testing-framework-guide.md).
+
 ## Database Setup
 
 This project uses SQLite with Drizzle ORM.

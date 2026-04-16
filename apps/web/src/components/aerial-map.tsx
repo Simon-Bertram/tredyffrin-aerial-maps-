@@ -8,12 +8,16 @@ import {
   getTerrainForVisualStyle,
 } from "@/components/ui/map-style-config";
 import type { MapVisualStyleId } from "@/components/ui/map-types";
-import { locations } from "@/lib/locations";
+import type { LocationRecord } from "@/lib/locations";
 
 /** Tredyffrin area — MapLibre uses [longitude, latitude] (GeoJSON order). */
 const TREDDYFFRIN_CENTER: [number, number] = [-75.4368, 40.0902];
 
-export function AerialMap() {
+interface AerialMapProps {
+  locations: LocationRecord[];
+}
+
+export function AerialMap({ locations }: AerialMapProps) {
   const [activePhotoTabs, setActivePhotoTabs] = useState<
     Record<string, string>
   >({});

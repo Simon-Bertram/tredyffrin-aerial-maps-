@@ -1,5 +1,4 @@
-import assert from "node:assert/strict";
-import test from "node:test";
+import { describe, expect, it } from "vitest";
 
 import {
   MAP_STYLE_OPTIONS,
@@ -7,23 +6,25 @@ import {
   getTerrainForVisualStyle,
 } from "@/components/ui/map-style-config";
 
-test("style options include terrain, streets, and dark", () => {
+describe("map style controls", () => {
+it("style options include terrain, streets, and dark", () => {
   const styleIds = MAP_STYLE_OPTIONS.map((option) => option.id);
-  assert.deepEqual(styleIds, ["terrain", "streets", "dark"]);
+  expect(styleIds).toEqual(["terrain", "streets", "dark"]);
 });
 
-test("visual styles resolve to a light/dark style URL pair", () => {
+it("visual styles resolve to a light/dark style URL pair", () => {
   const terrainStyles = getMapStylesForVisualStyle("terrain");
   const streetsStyles = getMapStylesForVisualStyle("streets");
 
-  assert.equal(typeof terrainStyles.light, "string");
-  assert.equal(typeof terrainStyles.dark, "string");
-  assert.equal(typeof streetsStyles.light, "string");
-  assert.equal(typeof streetsStyles.dark, "string");
+  expect(typeof terrainStyles.light).toBe("string");
+  expect(typeof terrainStyles.dark).toBe("string");
+  expect(typeof streetsStyles.light).toBe("string");
+  expect(typeof streetsStyles.dark).toBe("string");
 });
 
-test("terrain config is only enabled for the terrain visual style", () => {
-  assert.ok(getTerrainForVisualStyle("terrain"));
-  assert.equal(getTerrainForVisualStyle("streets"), undefined);
-  assert.equal(getTerrainForVisualStyle("dark"), undefined);
+it("terrain config is only enabled for the terrain visual style", () => {
+  expect(getTerrainForVisualStyle("terrain")).toBeTruthy();
+  expect(getTerrainForVisualStyle("streets")).toBeUndefined();
+  expect(getTerrainForVisualStyle("dark")).toBeUndefined();
+});
 });

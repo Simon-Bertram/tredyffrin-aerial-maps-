@@ -7,7 +7,7 @@ allowBuilds:
   sharp: true
   workerd: true
 catalog:
-  "@cloudflare/workers-types": ^4.20260413.1
+  "@cloudflare/workers-types": ^4.20260415.1
   "@libsql/client": 0.15.15
   "@types/node": ^22.19.17
   alchemy: ^0.90.0

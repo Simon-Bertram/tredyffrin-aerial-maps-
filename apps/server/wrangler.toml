@@ -1,0 +1,12 @@
+name = 'server'
+main = 'src/index.ts'
+compatibility_date = '2026-04-12'
+compatibility_flags = ['nodejs_compat']
+
+[vars]
+CORS_ORIGIN = 'http://localhost:4321'
+
+[[d1_databases]]
+binding = 'DB'
+database_name = 'tehs-aerial-images-test'
+database_id = '00000000-0000-0000-0000-000000000000'

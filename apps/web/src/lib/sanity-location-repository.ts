@@ -5,7 +5,6 @@ import {
 } from '@/lib/sanity-queries'
 import {
 	parseLocationRecordFromSanity,
-	parseLocationRecordsFromSanity,
 } from '@/lib/sanity-locations'
 
 import type { LocationRecord } from '@/lib/locations'
@@ -17,7 +16,17 @@ interface LocationDetailBySlugQueryParams {
 export async function getSanityLocationRecordsList(): Promise<LocationRecord[]> {
 	const locations = await sanityClient.fetch<unknown>(LOCATION_LIST_QUERY)
 
-	return parseLocationRecordsFromSanity(locations)
+	if (!Array.isArray(locations)) {
+		return []
+	}
+
+	return locations.flatMap((location) => {
+		try {
+			return [parseLocationRecordFromSanity(location)]
+		} catch {
+			return []
+		}
+	})
 }
 
 export async function getSanityLocationRecordBySlug(
@@ -32,5 +41,9 @@ export async function getSanityLocationRecordBySlug(
 		return undefined
 	}
 
-	return parseLocationRecordFromSanity(location)
+	try {
+		return parseLocationRecordFromSanity(location)
+	} catch {
+		return undefined
+	}
 }

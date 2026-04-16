@@ -73,10 +73,10 @@ const sanityLocationInputSchema = z.object({
 	_id: requiredTextSchema,
 	slug: sanitySlugSchema,
 	name: requiredTextSchema,
-	coordinates: sanityCoordinatesSchema,
-	shortDescription: requiredTextSchema,
-	fullDescription: requiredTextSchema,
-	photos: z.array(sanityPhotoInputSchema),
+	coordinates: sanityCoordinatesSchema.optional(),
+	shortDescription: optionalTextSchema,
+	fullDescription: optionalTextSchema,
+	photos: z.array(sanityPhotoInputSchema).optional(),
 })
 
 const sanityLocationSchema = z.object({
@@ -87,8 +87,8 @@ const sanityLocationSchema = z.object({
 		latitude: z.number().finite(),
 		longitude: z.number().finite(),
 	}),
-	shortDescription: requiredTextSchema,
-	fullDescription: requiredTextSchema,
+	shortDescription: z.string().trim(),
+	fullDescription: z.string().trim(),
 	photos: z.array(sanityPhotoSchema),
 })
 
@@ -128,13 +128,27 @@ function normalizeSanityPhoto(
 function normalizeSanityLocation(
 	location: z.output<typeof sanityLocationInputSchema>,
 ): SanityLocation {
+	const normalizedPhotos = (location.photos ?? []).flatMap((photo) => {
+		try {
+			return [normalizeSanityPhoto(photo)]
+		} catch {
+			return []
+		}
+	})
+
 	return sanityLocationSchema.parse({
 		...location,
 		slug:
 			typeof location.slug === 'string'
 				? location.slug
 				: location.slug.current,
-		photos: location.photos.map(normalizeSanityPhoto),
+		coordinates: location.coordinates ?? {
+			latitude: 0,
+			longitude: 0,
+		},
+		shortDescription: location.shortDescription ?? '',
+		fullDescription: location.fullDescription ?? '',
+		photos: normalizedPhotos,
 	})
 }
 

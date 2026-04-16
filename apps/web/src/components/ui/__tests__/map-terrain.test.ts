@@ -1,5 +1,4 @@
-import assert from "node:assert/strict";
-import test from "node:test";
+import { describe, expect, it } from "vitest";
 
 import {
   ensureTerrainLayers,
@@ -58,32 +57,34 @@ const TERRAIN_CONFIG: MapTerrainConfig = {
   exaggeration: 1.25,
 };
 
-test("ensureTerrainLayers adds source/layers and sets terrain", () => {
+describe("map terrain helpers", () => {
+it("ensureTerrainLayers adds source/layers and sets terrain", () => {
   const map = new MockMap();
   const applied = ensureTerrainLayers(map as never, TERRAIN_CONFIG);
 
-  assert.equal(applied, true);
-  assert.ok(map.getSource("dem"));
-  assert.ok(map.getLayer("hills"));
-  assert.ok(map.getLayer("sky"));
-  assert.deepEqual(map.terrain, { source: "dem", exaggeration: 1.25 });
+  expect(applied).toBe(true);
+  expect(map.getSource("dem")).toBeTruthy();
+  expect(map.getLayer("hills")).toBeTruthy();
+  expect(map.getLayer("sky")).toBeTruthy();
+  expect(map.terrain).toEqual({ source: "dem", exaggeration: 1.25 });
 });
 
-test("ensureTerrainLayers is idempotent for source and layer registration", () => {
+it("ensureTerrainLayers is idempotent for source and layer registration", () => {
   const map = new MockMap();
   ensureTerrainLayers(map as never, TERRAIN_CONFIG);
   ensureTerrainLayers(map as never, TERRAIN_CONFIG);
 
-  assert.equal(map.sources.size, 1);
-  assert.equal(map.layers.size, 2);
+  expect(map.sources.size).toBe(2);
+  expect(map.layers.size).toBe(2);
 });
 
-test("removeTerrainArtifacts clears terrain, layers, and source", () => {
+it("removeTerrainArtifacts clears terrain, layers, and source", () => {
   const map = new MockMap();
   ensureTerrainLayers(map as never, TERRAIN_CONFIG);
   removeTerrainArtifacts(map as never, TERRAIN_CONFIG);
 
-  assert.equal(map.terrain, null);
-  assert.equal(map.sources.size, 0);
-  assert.equal(map.layers.size, 0);
+  expect(map.terrain).toBeNull();
+  expect(map.sources.size).toBe(0);
+  expect(map.layers.size).toBe(0);
+});
 });

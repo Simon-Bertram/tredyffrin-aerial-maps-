@@ -1,6 +1,14 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import { AerialMap } from "@/components/aerial-map";
+import { getSanityLocationRecordsList } from "@/lib/sanity-location-repository";
+import { env } from "@tehs-aerial-images/env/web";
+
+const locations = await getSanityLocationRecordsList();
+const backendStatusResponse = await fetch(`${env.PUBLIC_SERVER_URL}/`);
+const backendStatus = backendStatusResponse.ok
+  ? await backendStatusResponse.text()
+  : "UNAVAILABLE";
 ---
 
 <Layout title="tredyffrin-aerial-images">
@@ -17,7 +25,10 @@ import { AerialMap } from "@/components/aerial-map";
           Explore historical aerial photography curated as a living regional
           archive with rich map detail and contextual metadata.
         </p>
-        <AerialMap client:load />
+        <p data-testid="backend-status" class="mb-4 text-sm text-muted-foreground">
+          Backend status: {backendStatus}
+        </p>
+        <AerialMap client:load locations={locations} />
       </section>
     </div>
   </main>

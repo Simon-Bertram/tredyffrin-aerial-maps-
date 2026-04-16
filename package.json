@@ -10,15 +10,16 @@
     "node": ">=22.12.0"
   },
   "scripts": {
-    "dev": "turbo dev",
-    "build": "turbo build",
-    "check-types": "turbo check-types",
-    "dev:web": "turbo -F web dev",
-    "dev:server": "turbo -F server dev",
-    "db:push": "turbo -F @tehs-aerial-images/db db:push",
-    "db:generate": "turbo -F @tehs-aerial-images/db db:generate",
-    "deploy": "turbo -F @tehs-aerial-images/infra deploy",
-    "destroy": "turbo -F @tehs-aerial-images/infra destroy"
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "check-types": "turbo run check-types",
+    "test": "turbo run test",
+    "dev:web": "turbo run -F web dev",
+    "dev:server": "turbo run -F server dev",
+    "db:push": "turbo run -F @tehs-aerial-images/db db:push",
+    "db:generate": "turbo run -F @tehs-aerial-images/db db:generate",
+    "deploy": "turbo run -F @tehs-aerial-images/infra deploy",
+    "destroy": "turbo run -F @tehs-aerial-images/infra destroy"
   },
   "dependencies": {
     "@tehs-aerial-images/env": "workspace:*",
@@ -26,11 +27,13 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "^0.14.7",
     "@cloudflare/workers-types": "catalog:",
     "@tehs-aerial-images/config": "workspace:*",
     "@types/node": "catalog:",
     "turbo": "^2.9.6",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vitest": "^4.1.4"
   },
   "packageManager": "pnpm@10.32.1"
 }

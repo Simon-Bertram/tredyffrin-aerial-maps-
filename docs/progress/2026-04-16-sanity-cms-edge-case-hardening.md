@@ -1,0 +1,7 @@
+- Objective: Complete the Sanity integration hardening step by removing UI assumptions around required photos and metadata fields.
+- Scope: `apps/web/src/components/aerial-map-marker.tsx`, `apps/web/src/pages/locations/[slug].astro`
+- Changes: Updated map marker tooltip rendering to handle zero-photo locations with a placeholder state, safe defaults for missing `direction`/`photoDate`, and continued support for multi-photo tabs; updated location detail page to render a no-photos fallback section and conditionally render metadata rows only when fields exist.
+- Validation: `ReadLints` reported no linter errors on modified files.
+- Validation: `pnpm --filter web exec tsc --noEmit` failed on an existing unrelated type error in `src/components/ui/use-map-terrain.ts` (`"sky"` layer type mismatch).
+- Risks or blockers: Published flow validation remains partially blocked by unrelated existing TypeScript error and local Node engine mismatch (`v20.18.2` vs required `>=22.12.0`).
+- Next actions: Execute `validate-published-rollout` by running a Sanity-backed build/preview pass with required `PUBLIC_SANITY_*` env vars and verifying generated location routes and page rendering.

@@ -22,10 +22,13 @@ export function AerialMapMarker({
   onActiveTabChange,
 }: AerialMapMarkerProps) {
   const detailPath = `/locations/${location.slug}`;
+  const hasPhotos = location.photos.length > 0;
   const firstPhoto = location.photos[0];
   const multiplePhotos = location.photos.length > 1;
   const activePhotoIndex = Number(activeTab) - 1;
   const activePhoto = location.photos[activePhotoIndex] ?? location.photos[0];
+  const activePhotoDirection = activePhoto?.direction ?? "Direction unknown";
+  const activePhotoDate = activePhoto?.photoDate ?? "Date unknown";
   const phototabItems = location.photos.map((photo, index) => ({
     name: `${index + 1}`,
     icon: <span className="block size-1.5 rounded-full bg-current" />,
@@ -66,13 +69,17 @@ export function AerialMapMarker({
                 imageClassName="rounded-none"
                 tabListClassName="bottom-0 w-28 translate-y-0 py-1"
               />
-            ) : (
+            ) : hasPhotos ? (
               <img
                 src={firstPhoto.src}
                 alt={firstPhoto.alt}
                 className="h-full w-full object-cover"
                 loading="lazy"
               />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center bg-muted text-xs text-muted-foreground">
+                No photo available
+              </div>
             )}
             <div className="bg-secondary text-secondary-foreground absolute top-2 left-2 px-2 py-1 text-[10px] tracking-[0.08em] uppercase">
               {location.photos.length} photo
@@ -89,9 +96,9 @@ export function AerialMapMarker({
             </p>
             <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
               <Camera className="size-3.5" />
-              <span>{activePhoto.direction}</span>
+              <span>{activePhotoDirection}</span>
               <span aria-hidden="true">•</span>
-              <span>{activePhoto.photoDate}</span>
+              <span>{activePhotoDate}</span>
               {multiplePhotos && (
                 <>
                   <span aria-hidden="true">•</span>

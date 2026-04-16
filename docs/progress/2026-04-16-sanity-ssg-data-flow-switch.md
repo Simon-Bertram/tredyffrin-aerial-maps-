@@ -1,0 +1,7 @@
+- Objective: Complete the Sanity integration step that switches public SSG pages/components from local static data to Sanity-backed records.
+- Scope: `apps/web/src/components/aerial-map.tsx`, `apps/web/src/pages/index.astro`, `apps/web/src/pages/locations/[slug].astro`
+- Changes: Refactored `AerialMap` to accept `locations` as props instead of importing local mock data, updated `index.astro` to fetch the Sanity location list at build time and pass it into the map island, and updated `locations/[slug].astro` to generate static paths from the Sanity location list and pass each resolved location as page props.
+- Validation: `ReadLints` reported no linter errors on the modified files.
+- Validation: `pnpm --filter web exec tsc --noEmit` failed on an existing unrelated type error in `src/components/ui/use-map-terrain.ts` (`"sky"` layer type mismatch).
+- Risks or blockers: This step now depends on Sanity env configuration (`PUBLIC_SANITY_PROJECT_ID`, `PUBLIC_SANITY_DATASET`, `PUBLIC_SANITY_API_VERSION`) being present at build time.
+- Next actions: Complete `harden-cms-edge-cases` by handling zero-photo locations and optional metadata rendering in map markers/detail pages before rollout validation.
