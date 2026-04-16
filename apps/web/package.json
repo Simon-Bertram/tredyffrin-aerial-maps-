@@ -17,6 +17,7 @@
     "@fontsource-variable/inter": "^5.2.8",
     "@libsql/client": "catalog:",
     "@radix-ui/react-tabs": "^1.1.13",
+    "@sanity/client": "^7.21.0",
     "@tehs-aerial-images/env": "workspace:*",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",

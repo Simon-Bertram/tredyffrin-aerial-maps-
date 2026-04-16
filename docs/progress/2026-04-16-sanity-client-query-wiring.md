@@ -1,0 +1,7 @@
+- Objective: Complete the Sanity integration todo for client/query/env wiring for published location reads.
+- Scope: `apps/web/astro.config.mjs`, `packages/env/src/web.ts`, `apps/web/package.json`, `apps/web/src/lib/sanity-client.ts`, `apps/web/src/lib/sanity-queries.ts`, `apps/web/src/lib/sanity-location-repository.ts`
+- Changes: Added `@sanity/client`, added public Astro/env schema keys for Sanity project/dataset/api version, created a Sanity client (`useCdn: true`, `perspective: 'published'`), added concrete GROQ list/detail queries that flatten `slug.current`, project `photo.asset->url` as `src`, and normalize numeric `photoDate` to string, and added repository helpers that fetch and parse into `LocationRecord` via existing Zod mappers.
+- Validation: `ReadLints` reported no linter errors in modified files.
+- Validation: `pnpm --filter web exec tsc --noEmit` failed on an existing unrelated error in `src/components/ui/use-map-terrain.ts` (`"sky"` layer type mismatch).
+- Risks or blockers: New Sanity env vars are now required by env validation at runtime; pages are not switched over yet, so wiring is present but unused until the next todo.
+- Next actions: Complete `switch-public-ssg-data-flow` by refactoring `index.astro`, `AerialMap`, and `locations/[slug].astro` to load from the Sanity repository and pass data as props.
